@@ -1,10 +1,10 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 细说iOS并发编程 · null</title><meta name="description" content="细说iOS并发编程 - Yang Jie"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://yangjie2.github.io/atom.xml"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/categories" target="_self" class="nav-list-link">CATEGORIES</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">TAGS</a></li><li class="nav-list-item"><a href="https://github.com/yangjie2" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">细说iOS并发编程</h1><div class="post-info">Jul 6, 2018</div><div class="post-content"><p>并发编程是一个很有挑战的任务，它有许多错综复杂的问题和陷阱。在iOS开发中，当使用类似 Grand Central Dispatch（GCD）或 NSOperationQueue 的 API 时，很容易遗忘这些问题和陷阱。本文参考 <a href="https://www.objc.io/" target="_blank" rel="noopener">objc.io</a> 上iOS多线程的一篇文章：<a href="https://objccn.io/issue-2-4/" target="_blank" rel="noopener">线程安全类的设计</a>，以及 <a href="https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1" target="_blank" rel="noopener">raywenderlich</a> 上的 <a href="https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1" target="_blank" rel="noopener">Grand Central Dispatch In-Depth:Part 1/2</a> , <a href="https://www.raywenderlich.com/148515/grand-central-dispatch-tutorial-swift-3-part-2" target="_blank" rel="noopener">Grand Central Dispatch In-Depth:Part 2/2</a> ，还有这篇 <a href="http://mrpeak.cn/blog/ios-thread-safety/" target="_blank" rel="noopener">iOS多线程到底不安全在哪里</a>。同时c参考了苹果 Guides and Sample Code 中关于<a href="https://developer.apple.com/library/archive/documentation/General/Conceptual/ConcurrencyProgrammingGuide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40008091-CH1-SW1" target="_blank" rel="noopener">并发编程</a>的章节。</p>
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 细说iOS并发编程 · null</title><meta name="description" content="细说iOS并发编程 - Yang Jie"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://yangjie2.github.io/atom.xml"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/categories/" target="_self" class="nav-list-link">CATEGORIES</a></li><li class="nav-list-item"><a href="/tags/" target="_self" class="nav-list-link">TAGS</a></li><li class="nav-list-item"><a href="https://github.com/yangjie2" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">细说iOS并发编程</h1><div class="post-info">Jul 6, 2018</div><div class="post-content"><p>并发编程是一个很有挑战的任务，它有许多错综复杂的问题和陷阱。在iOS开发中，当使用类似 Grand Central Dispatch（GCD）或 NSOperationQueue 的 API 时，很容易遗忘这些问题和陷阱。本文参考 <a href="https://www.objc.io/" target="_blank" rel="noopener">objc.io</a> 上iOS多线程的一篇文章：<a href="https://objccn.io/issue-2-4/" target="_blank" rel="noopener">线程安全类的设计</a>，以及 <a href="https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1" target="_blank" rel="noopener">raywenderlich</a> 上的 <a href="https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1" target="_blank" rel="noopener">Grand Central Dispatch In-Depth:Part 1/2</a> , <a href="https://www.raywenderlich.com/148515/grand-central-dispatch-tutorial-swift-3-part-2" target="_blank" rel="noopener">Grand Central Dispatch In-Depth:Part 2/2</a> ，还有这篇 <a href="http://mrpeak.cn/blog/ios-thread-safety/" target="_blank" rel="noopener">iOS多线程到底不安全在哪里</a>。同时c参考了苹果 Guides and Sample Code 中关于<a href="https://developer.apple.com/library/archive/documentation/General/Conceptual/ConcurrencyProgrammingGuide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40008091-CH1-SW1" target="_blank" rel="noopener">并发编程</a>的章节。</p>
 <h3 id="并发编程相关的几个概念"><a href="#并发编程相关的几个概念" class="headerlink" title="并发编程相关的几个概念"></a>并发编程相关的几个概念</h3><p><strong>进程（Process）</strong> 简单来说，进程是指系统中正在运行的一个应用程序，每一个程序都是一个进程，并且进程之间是独立的，每个进程均运行在其专用且受保护的内存空间内。</p>
 <p><strong>线程（thread）</strong> 是操作系统能够进行运算调度的最小单，是组成进程的子单元。线程是进程中的一个实体，是被系统独立调度和分派的基本单位。说得再具体一些，线程就是“一个CPU执行的一条无分叉的命令序列”。所有的并发编程 API 都是构建于线程之上的 —— 包括 GCD 和操作队列（operation queues）。</p>
 <p>同一进程中的多个线程将共享该进程中的全部系统资源，如虚拟地址空间、文件描述符等。但每个线程都拥有自己的栈，寄存器，本地存储（thread-local storage）。一个进程可以有很多线程，每条线程并行执行不同的任务，称为多线程。</p>
 <p>多个线程可以在单核 CPU 上同时（或者至少看作同时）运行。操作系统将小的时间片分配给每一个线程，这样就能够让用户感觉到有多个任务在同时进行。如果 CPU 是多核的，那么多个线程就可以真正的并行处理，从而减少了完成某项操作所需要的总时间。</p>
 <p><strong>并发(Concurrent)/并行(Parallel)</strong> 很多人对并发/并行的概念感到困惑，按照我的理解，并发所描述的概念是“同时”运行多个线程，多个线程“同时”被处理。这里对同时加了引号，因为这些线程可能是在单核 CPU 上以分时（时间共享）的形式，在极短的时间片段间不停的切换运行(类似通信中的时分复用(TDM))，也可能是在多核 CPU 上以真正的并行方式同时运行。</p>
-<p>关于并发和并行，可以用下面这张有趣的图解释：<br><img src="2018-07-06-细说iOS并发编程/并发与并行.png" alt=""></p>
+<p>关于并发和并行，可以用下面这张有趣的图解释：<br><img src="/2018/07/06/细说iOS并发编程/并发与并行.png" alt=""></p>
 <p>如果还是不能理解，或许应该看下这段准确的英文解释：</p>
 <blockquote>
 <p>Concurrency and parallelism are often mentioned together, so it’s worth a short explanation to distinguish them from each other.</p>
@@ -16,7 +16,7 @@
 <p><strong>临界区(Critical Section)</strong> 不能被两个线程同时执行的一段代码叫做临界区。因为这段代码通常操控着一个共享的临界资源(一次仅允许一个线程使用的共享资源)，多个线程必须互斥的访问该临界资源。只能被单一线程/进程访问的共享资源，比如打印机等。</p>
 <p><strong>竞态条件(Race Condition)</strong> 软件系统的正确行为依赖于多个线程交替执行的时序时，就会发生竞态条件。常见的竟态条件为：</p>
 <ol>
-<li>先检测后执行。执行依赖于检测的结果，而检测结果取决于多线程的执行时序，而多个线程的执行时序通常情况下是不固定不可判断的，从而导致执行结果出现问题。<br><img src="2018-07-06-细说iOS并发编程/image2.png" alt=""></li>
+<li>先检测后执行。执行依赖于检测的结果，而检测结果取决于多线程的执行时序，而多个线程的执行时序通常情况下是不固定不可判断的，从而导致执行结果出现问题。<br><img src="/2018/07/06/细说iOS并发编程/image2.png" alt=""></li>
 </ol>
 <p>对于 main 线程，如果文件a不存在，则创建文件a，但是在判断文件a不存在之后，Task线程创建了文件a，这时候先前的判断结果已经失效（main线程的执行依赖了一个错误的判断结果），此时文件a已经存在了，但是 main 线程还是会继续创建文件a，导致 Task 线程创建的文件a被覆盖、文件中的内容丢失等等问题。多线程环境中对同一个文件的操作要加锁。</p>
 <ol start="2">
@@ -37,14 +37,14 @@
 <p>通过GCD，开发者不必再直接跟线程打交道。GCD 不仅决定着你的代码块将在哪个线程被执行，它还根据可用的系统资源对这些线程进行管理。这样可以将开发者从线程管理的工作中解放出来，通过集中的管理线程，来缓解大量线程被创建的问题。</p>
 <p>GCD中的两个核心概念是“任务”和“队列”，开发者只需专注于想要执行的“任务” block，然后添加到适当的“队列”中，这种形象的抽象方式更容易被人理解和使用。</p>
 <p>GCD 公开有 5 个不同的队列：运行在主线程中的 main queue，3 个不同优先级的后台队列，以及一个优先级更低的后台队列（用于 I/O）。另外，开发者可以创建自定义队列：串行或者并行队列。自定义队列非常强大，在自定义队列中被调度的所有 block 任务最终都将被放入到系统的全局队列和线程池中，如下图所示：</p>
-<p><img src="2018-07-06-细说iOS并发编程/queues.png" alt="系统队列和自定义队列"></p>
+<p><img src="/2018/07/06/细说iOS并发编程/queues.png" alt="系统队列和自定义队列"></p>
 <p>我们强烈建议，在大多数情况下使用默认优先级的队列就可以了，如果执行的任务需要访问一些共享的资源，那么在不同优先级的队列中调度这些任务很快就会造成不可预期的行为。这样可能会引起程序的完全挂起，因为低优先级的任务阻塞了高优先级任务，使它不能被执行。</p>
 <p>虽然 GCD 是一个低层级的 C 语言 API ，但是它使用起来非常的直接。不过这也容易使开发者忘记并发编程中的许多注意事项和陷阱，这些将在后面并发编程带来的问题中进行讨论。</p>
-<p><strong>串行队列(Serial Queues)</strong> 串行队列中的任务，每次只执行一个，先前的任务执行完毕后，才会执行下一个。当然，你不会知道一个block结束与下一个block开始之间的时间间隔是多少，如下图所示：<br><img src="2018-07-06-细说iOS并发编程/serial_queue.png" alt=""></p>
+<p><strong>串行队列(Serial Queues)</strong> 串行队列中的任务，每次只执行一个，先前的任务执行完毕后，才会执行下一个。当然，你不会知道一个block结束与下一个block开始之间的时间间隔是多少，如下图所示：<br><img src="/2018/07/06/细说iOS并发编程/serial_queue.png" alt=""></p>
 <p>这些任务的执行时间是在GCD的控制之下，你唯一能够确定的是：GCD每次只执行一个任务，任务执行顺序就是它们被加入队列的顺序。</p>
 <p>因为在串行队列中两个任务不可能并发运行，所以就没有可能会同时访问同一个临界区的风险。所以仅对于这些任务而言，这种运行机制能够保护临界区避免发生竟态条件。所以，如果访问临界区的唯一方式是通过被提交到那个串行队列中的任务，那么你可以确保临界区是安全的。</p>
 <p><strong>并发队列(Concurrent Queues)</strong> 在并发队列中，你能够保证的仅有一件事：任务的执行顺序就是它们被添加到队列中的顺序。对于每个任务的完成顺序、下一个任务什么时候开始以及在任意给定时间内正在运行的 blocks 数量都是不清楚的，这些完全取决去 GCD。下图展示了在GCD下4个并发任务的执行：</p>
-<p><img src="2018-07-06-细说iOS并发编程/concurrent_queue.png" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/concurrent_queue.png" alt=""></p>
 <p>上图表达的意思是，一个 block 什么时候开始执行完全取决于 GCD，如果一个 blcok 的执行时间与另一个重叠，由 GCD 决定这个 block 是需要运行在另一个核心上，还是在同一个核心上通过上下文切换(context switch)的方式执行。</p>
 <p>队列类型<br>系统提供了一个特殊的串行队列叫主队列(main queue)，像其他串行队列一样，主队列中的任务每次执行一个，但是能够确定的是，主队列中的所有任务都在主线程执行，主线程是唯一允许更新UI的线程。主队列用来向 UIViews 对象发送消息或者发送通知。</p>
 <p>系统还提供了4种不同优先级的全局并发队列(Global Dispatch Queues)：background、low、default、high，优先级由低到高。需要注意的是，苹果的 API 也使用了这些队列，所以这些队列中并非只有你自己添加的任务。</p>
@@ -54,7 +54,7 @@
 <p><strong>(1). dispatch_async</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad</span><br><span class="line">&#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^&#123;</span><br><span class="line">        NSLog(@&quot;First Log&quot;); // 1</span><br><span class="line">    &#125;);</span><br><span class="line">    NSLog(@&quot;Second Log&quot;); // 2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>下面这个动态图生动的呈现出究竟发生了什么，左侧是代码中的断点，右侧是相关队列的状态：</p>
-<p><img src="2018-07-06-细说iOS并发编程/dispatch_async.gif" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/dispatch_async.gif" alt=""></p>
 <ol>
 <li>主队列按顺序向前执行任务，下一个任务就是实例化一个 UIViewController，走到 viewDidLoad 方法内；</li>
 <li>viewDidLoad 在主线程执行</li>
@@ -72,7 +72,7 @@
 </ul>
 <p><strong>(2). dispatch_sync</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad</span><br><span class="line">&#123;</span><br><span class="line">     [super viewDidLoad];</span><br><span class="line">     dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^&#123;</span><br><span class="line">         NSLog(@&quot;First Log&quot;); // 1</span><br><span class="line">     &#125;);</span><br><span class="line">     NSLog(@&quot;Second Log&quot;); // 2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="2018-07-06-细说iOS并发编程/dispatch_sync.gif" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/dispatch_sync.gif" alt=""></p>
 <p>上图中各个步骤的说明如下：</p>
 <ol>
 <li>主队列按顺序向前执行任务，下一个任务就是实例化一个 UIViewController，走到 viewDidLoad 方法内</li>
@@ -157,12 +157,12 @@
 <p>并发编程中许多问题的根源就是在多线程中访问共享资源。资源可以是一个属性，一个对象，通用的内存、网络设备或者一个文件等等。在多线程中，任何一个共享的资源都可能是一个潜在的冲突点，你必须精心设计，以防止这种冲突的发生。</p>
 <p>为了演示这类问题，我们举一个关于资源的简单示例：比如仅仅用一个整型值来做计数器。在程序运行过程中，我们有两个并行线程 A 和 B，这两个线程都尝试着同时增加计数器的值。问题来了，你通过 C 语言或 Objective-C 写的代码大多数情况下对于 CPU 来说不会仅仅是一条机器指令。要想增加计数器的值，当前的必须被从内存中读出，然后增加计数器的值，最后还需要将这个增加后的值写回内存中。</p>
 <p>我们可以试着想一下，如果两个线程同时做上面涉及到的操作，会发生怎样的偶然。例如，线程 A 和 B 都从内存中读取出了计数器的值，假设为 17 ，然后线程A将计数器的值加1，并将结果 18 写回到内存中。同时，线程B也将计数器的值加 1 ，并将结果 18 写回到内存中。实际上，此时计数器的值已经被破坏掉了，因为计数器的值 17 被加 1 了两次，而它的值却是 18。</p>
-<p><img src="2018-07-06-细说iOS并发编程/race_condition.png" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/race_condition.png" alt=""></p>
 <p>这个问题被叫做<a href="https://en.wikipedia.org/wiki/Race_condition#Software" target="_blank" rel="noopener">竞态条件</a>，在多线程里面访问一个共享的资源，如果没有一种机制来确保在线程 A 结束访问一个共享资源之前，线程 B 就不会开始访问该共享资源的话，资源竞争的问题就总是会发生。如果你所写入内存的并不是一个简单的整数，而是一个更复杂的数据结构，可能会发生这样的现象：当第一个线程正在写入这个数据结构时，第二个线程却尝试读取这个数据结构，那么获取到的数据可能是新旧参半或者没有初始化。为了防止出现这样的问题，多线程需要一种互斥的机制来访问共享资源。</p>
 <p>在实际的开发中，情况甚至要比上面介绍的更加复杂，因为现代 CPU 为了优化目的，往往会改变向内存读写数据的顺序。</p>
 <p><strong>互斥锁</strong></p>
 <p>互斥访问的意思就是同一时刻，只允许一个线程访问某个特定资源。为了保证这一点，每个希望访问共享资源的线程，首先需要获得一个共享资源的<a href="https://en.wikipedia.org/wiki/Lock_%28computer_science%29" target="_blank" rel="noopener">互斥锁</a>，只有当某个线程对资源完成了操作，释放掉这个互斥锁，这样别的线程才有机会访问该共享资源。</p>
-<p><img src="2018-07-06-细说iOS并发编程/Mutex.png" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/Mutex.png" alt=""></p>
 <p>除了确保互斥访问，还需要解决代码无序执行所带来的问题。如果不能确保 CPU 访问内存的顺序跟编程时的代码指令一样，那么仅仅依靠互斥访问是不够的。为了解决由 CPU 的优化策略引起的副作用，还需要引入<a href="https://en.wikipedia.org/wiki/Memory_barrier" target="_blank" rel="noopener">内存屏障(Memory barrier)</a>。通过设置 Memory barrier，来确保没有无序执行的指令能跨过屏障而执行。</p>
 <p>当然，互斥锁自身的实现是需要没有竞争条件的。这实际上是非常重要的一个保证，并且需要在现代 CPU 上使用特殊的指令。更多关于原子操作（atomic operation）的信息，请阅读 Daniel 写的文章：<a href="https://objccn.io/issue-2-3/" target="_blank" rel="noopener">底层并发技术</a>。</p>
 <p>从语言层面来说，在 Objective-C 中将属性以 atomic 的形式来声明，就能支持互斥锁了。事实上在默认情况下，属性就是 atomic 的。将一个属性声明为 atomic 表示每次访问该属性都会进行隐式的加锁和解锁操作。虽然最把稳的做法就是将所有的属性都声明为 atomic，但是加解锁这也会付出一定的代价。</p>
@@ -172,7 +172,7 @@
 <p>我们经常能看到本来计划并行运行的代码，但实际上由于共享资源中配置了相关的锁，所以同一时间只有一个线程是处于激活状态的。对于你的代码会如何在多核上运行的预测往往十分重要，你可以使用 Instrument 的 CPU strategy view 来检查是否有效的利用了 CPU 的可用核数，进而得出更好的想法，以此来优化代码。</p>
 <p><strong>死锁</strong></p>
 <p>互斥锁解决了竞态条件的问题，但很不幸同时这也引入了一些<a href="https://en.wikipedia.org/wiki/Lock_%28computer_science%29#The_problems_with_locks" target="_blank" rel="noopener">其他问题</a>，其中一个就是<a href="https://en.wikipedia.org/wiki/Deadlock" target="_blank" rel="noopener">死锁</a>。当多个线程在相互等待着对方的结束时，就会发生死锁，这时程序可能会被卡住。</p>
-<p><img src="2018-07-06-细说iOS并发编程/dead_lock.png" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/dead_lock.png" alt=""></p>
 <p>看看下面的代码，它交换两个变量的值：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">void swap(A, B)</span><br><span class="line">&#123;</span><br><span class="line">    lock(lockA);</span><br><span class="line">    lock(lockB);</span><br><span class="line">    int a = A;</span><br><span class="line">    int b = B;</span><br><span class="line">    A = b;</span><br><span class="line">    B = a;</span><br><span class="line">    unlock(lockB);</span><br><span class="line">    unlock(lockA);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>大多数时候，这能够正常运行。但是当两个线程使用相反的值来同时调用上面这个方法时：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">swap(X, Y); // 线程 1</span><br><span class="line">swap(Y, X); // 线程 2</span><br></pre></td></tr></table></figure></p>
 <p>此时程序可能会由于死锁而被终止。线程 1 获得了 X 的一个锁，线程 2 获得了 Y 的一个锁。 接着它们会同时等待另外一把锁，但是永远都不会获得。</p>
@@ -184,7 +184,7 @@
 <p>本节开头介绍了美国宇航局发射的开拓者号火星探测器在火星上遇到的并发问题。现在我们就来看看为什么开拓者号几近失败，以及为什么有时候我们的程序也会遇到相同的问题，该死的优先级反转。</p>
 <p>优先级反转是指程序在运行时低优先级的任务阻塞了高优先级的任务，有效的反转了任务的优先级。由于 GCD 提供了拥有不同优先级的后台队列，甚至包括一个 I/O 队列，所以我们最好了解一下优先级反转的可能性。</p>
 <p>高优先级和低优先级的任务之间共享资源时，就可能发生优先级反转。当低优先级的任务获得了共享资源的锁时，该任务应该迅速完成，并释放掉锁，这样高优先级的任务就可以在没有明显延时的情况下继续执行。然而高优先级任务会在低优先级的任务持有锁的期间被阻塞。如果这时候有一个中优先级的任务(该任务不需要那个共享资源)，那么它就有可能会抢占低优先级任务而被执行，因为此时高优先级任务是被阻塞的，所以中优先级任务是目前所有可运行任务中优先级最高的。此时，中优先级任务就会阻塞着低优先级任务，导致低优先级任务不能释放掉锁，这也就会引起高优先级任务一直在等待锁的释放。</p>
-<p><img src="2018-07-06-细说iOS并发编程/优先级反转.png" alt=""></p>
+<p><img src="/2018/07/06/细说iOS并发编程/优先级反转.png" alt=""></p>
 <p>在你的实际代码中，可能不会像发生在火星的事情那样戏剧性地不停重启。遇到优先级反转时，一般没那么严重。</p>
 <p>解决这个问题的方法，通常就是不要使用不同的优先级。通常最后你都会以让高优先级的代码等待低优先级的代码来解决问题。当你使用 GCD 时，总是使用默认的优先级队列（直接使用，或者作为目标队列）。如果你使用不同的优先级，很可能实际情况会让事情变得更糟糕。</p>
 <p>从中得到的教训是，使用不同优先级的多个队列听起来虽然不错，但毕竟是纸上谈兵。它将让本来就复杂的并行编程变得更加复杂和不可预见。如果你在编程中，遇到高优先级的任务突然没理由地卡住了，可能你会想起本文，以及那个美国宇航局的工程师也遇到过的被称为优先级反转的问题。</p>
