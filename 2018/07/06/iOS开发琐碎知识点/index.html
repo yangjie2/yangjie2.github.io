@@ -1,6 +1,6 @@
 <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> iOS开发琐碎知识点 · null</title><meta name="description" content="iOS开发琐碎知识点 - Yang Jie"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://yangjie2.github.io/atom.xml"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/yangjie2" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">iOS开发琐碎知识点</h1><div class="post-info">Jul 6, 2018</div><div class="post-content"><p>作为一个半路出家的小白、一个为了生活不断积累技术知识的俗人，本着急功近利的的精神把工作中遇到的小问题、琐碎知识点总结下来留给我闺女。<br>…<br>…</p>
 <a id="more"></a>
-<h5 id="1-bringSubViewToFront-不起作用的问题"><a href="#1-bringSubViewToFront-不起作用的问题" class="headerlink" title="1. bringSubViewToFront 不起作用的问题"></a>1. bringSubViewToFront 不起作用的问题</h5><p><img src="/2018-07-06-iOS开发琐碎知识点/issue1_1.png" alt="bringSubViewToFront 不起作用的问题"></p>
+<h5 id="1-bringSubViewToFront-不起作用的问题"><a href="#1-bringSubViewToFront-不起作用的问题" class="headerlink" title="1. bringSubViewToFront 不起作用的问题"></a>1. bringSubViewToFront 不起作用的问题</h5><p><img src="/2018/07/06/iOS开发琐碎知识点/issue1_1.png" alt="bringSubViewToFront 不起作用的问题"></p>
 <p>bringSubViewToFront方法只对该view的childView起作用，而对grandView不起作用，可以用上面的方法，把grandView前置。</p>
 <p>最近项目中遇到一个坑，有一个父view，该父view中添加了第三方SDK中的view，所以没有准确判断view的层级关系，导致我添加的一个label无论怎样调用bringSubViewToFront都无法显示在最前面。后来发现原因是，我的label添加后，调用bringSubViewToFront过早，因为这个时候第三方view还没加载上去，所以调用bringSubViewToFront也不会将label显示在第三方veiw的前面。要在第三方view加载完成后，才会起作用。</p>
 <p>总结：bringSubViewToFront方法只会将某个view放在其父view的所有已存在的子view的前面。后来添加的view依然有可能遮挡住这个view.</p>
@@ -15,10 +15,10 @@
 <li>All connections are reestablished. This includes actions, outlets, and bindings.</li>
 <li>-awakeFromNib is sent to interface objects, file’s owner, and proxy objects.</li>
 </ol>
-<h5 id="4-table-view-优化"><a href="#4-table-view-优化" class="headerlink" title="4. table view 优化"></a>4. table view 优化</h5><p><img src="/2018-07-06-iOS开发琐碎知识点/issue4_1.png" alt="table view 优化注意点"></p>
+<h5 id="4-table-view-优化"><a href="#4-table-view-优化" class="headerlink" title="4. table view 优化"></a>4. table view 优化</h5><p><img src="/2018/07/06/iOS开发琐碎知识点/issue4_1.png" alt="table view 优化注意点"></p>
 <h5 id="5-xib-中使用-autolayout-布局"><a href="#5-xib-中使用-autolayout-布局" class="headerlink" title="5. xib 中使用 autolayout 布局"></a>5. xib 中使用 autolayout 布局</h5><p>关于 xib 中使用 autolayout 布局的问题，下面两张图应该说明的很明白了。</p>
-<p><img src="/2018-07-06-iOS开发琐碎知识点/issue5_1.png" alt="1"></p>
-<p><img src="/2018-07-06-iOS开发琐碎知识点/issue5_2.png" alt="2"></p>
+<p><img src="/2018/07/06/iOS开发琐碎知识点/issue5_1.png" alt="1"></p>
+<p><img src="/2018/07/06/iOS开发琐碎知识点/issue5_2.png" alt="2"></p>
 <h5 id="6-使用-setValue-forKey-设置对象属性值"><a href="#6-使用-setValue-forKey-设置对象属性值" class="headerlink" title="6. 使用 setValue:forKey:设置对象属性值"></a>6. 使用 setValue:forKey:设置对象属性值</h5><p>在使用 setValue:forKey: 设置对象属性值时，不管该属性是否为只读的、不管在 .h 或者 .m 文件中，都能够成功设置！ 果如你重写了这个属性的 setter 方法，那么也会走该属性的 setter 方法。</p>
 <h5 id="7-Class-id-objc-object"><a href="#7-Class-id-objc-object" class="headerlink" title="7. Class / id / objc_object"></a>7. Class / id / objc_object</h5><p>Objective-C类是由 Class 类型来表示的，它实际上是一个指向<br>objc_class 结构体的指针。Class 的定义如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure></p>
 <p>查看 objc/runtime.h 中 objc_class 结构体的定义如下：</p>
@@ -55,7 +55,7 @@
 <p>Apple 这样做是有理由的，比如新建 window 不能覆盖整个屏幕，只是一个很小的悬浮框，此时的 rootViewController 不需要控制状态栏样式。</p>
 <p>当不设置 window 的 frame 或者设置 window 的 frame 为 [UIScreen mainScreen].bounds 时，在 rootViewController 中才能够设置状态栏样式。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//能够正确设置状态栏的代码：</span><br><span class="line"></span><br><span class="line">UIWindow *delegateWindow = [UIApplication sharedApplication].delegate.window;</span><br><span class="line">CGRect rect = [UIScreen mainScreen].bounds;</span><br><span class="line">self.window = [[UIWindow alloc] init];</span><br><span class="line">self.window.rootViewController = self.rootVC;</span><br><span class="line">[self.window makeKeyAndVisible];</span><br><span class="line">self.window.frame = CGRectMake(0, -rect.size.height, rect.size.width, rect.size.height);</span><br><span class="line">// 保持原先的keyWindow，避免一些奇怪的bug</span><br><span class="line">[delegateWindow makeKeyWindow];</span><br><span class="line">[UIView animateWithDuration:0.3 animations:^&#123;</span><br><span class="line">    self.window.frame = rect;</span><br><span class="line">&#125; completion:NULL];</span><br></pre></td></tr></table></figure>
-<h5 id="11-当-present-一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题"><a href="#11-当-present-一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题" class="headerlink" title="11. 当 present 一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题"></a>11. 当 present 一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题</h5><p>想模态展示一个VC窗口，设置它的背景透明度为0.5，却发觉prsent后的背景色变为黑色。<br><img src="/2018-07-06-iOS开发琐碎知识点/issue11_1.gif" alt=""></p>
+<h5 id="11-当-present-一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题"><a href="#11-当-present-一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题" class="headerlink" title="11. 当 present 一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题"></a>11. 当 present 一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题</h5><p>想模态展示一个VC窗口，设置它的背景透明度为0.5，却发觉prsent后的背景色变为黑色。<br><img src="/2018/07/06/iOS开发琐碎知识点/issue11_1.gif" alt=""></p>
 <p>原因是：</p>
 <blockquote>
 <p>NavigationController and the View Controllers are designed in such a way that only one view controller may show at a time. When a new view controller is pushed/presented the previous view controller will be hidden by the system. So when you reduce the modal view’s alpha you will possibly see the window’s backgroundColor (the black color you see now).</p>
@@ -68,7 +68,7 @@
 <li>App内部网页打开</li>
 <li>应用内点击打开</li>
 </ul>
-<p><img src="/2018-07-06-iOS开发琐碎知识点/issue12_1.png" alt=""></p>
+<p><img src="/2018/07/06/iOS开发琐碎知识点/issue12_1.png" alt=""></p>
 <p>这四种方式均跳转到 DetailViewController 界面。普通的跳转依然可以满足该场景, 最简单的解决方案是在四个不同的地方都写一个独立的界面打开逻辑。作为一名有追求的开发者, 这么冗余的四份入口代码显然不合适。</p>
 <p>一种解决方案是采用 URL 协议统一跳转。每个 viewController 页面定义与之对应的 URL，在各个入口只需要调用打开该URL的方法即可完成页面的创建以及跳转。</p>
 <p>基于URL的路由方案：</p>
@@ -92,5 +92,5 @@
 <p>Objective-C 在 C 的表达不存在的基础上增加了nil。nil 是一个指向不存在的对象指针。虽然它在语义上与NULL 不同，但它们在技术上是相等的。</p>
 <p>在框架层面，Foundation 定义了 NSNull，即一个类方法 +null，它返回一个单独的 NSNull 对象。NSNull 与 nil 以及 NULL 不同，因为它是一个实际的对象，而不是一个零值。、</p>
 <p>在 Foundation/NSObjCRuntime.h 中，Nil 被定义为指向零的类指针。它并不常常出现，但至少值得注意。</p>
-<p><img src="/2018-07-06-iOS开发琐碎知识点/issue15_1.png" alt=""></p>
+<p><img src="/2018/07/06/iOS开发琐碎知识点/issue15_1.png" alt=""></p>
 </div></article></div></main><footer><div class="paginator"><a href="/2018/07/06/细说iOS并发编程/" class="next">NEXT</a></div><div class="copyright"><p>© 2018 <a href="https://yangjie2.github.io">Yang Jie</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
