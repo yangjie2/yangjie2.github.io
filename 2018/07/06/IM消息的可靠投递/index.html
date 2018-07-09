@@ -104,23 +104,23 @@
 
 
 
-  <meta name="description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：  R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
+  <meta name="description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：   R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
 <meta name="keywords" content="IM,消息">
 <meta property="og:type" content="article">
 <meta property="og:title" content="IM消息的可靠投递">
 <meta property="og:url" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/index.html">
 <meta property="og:site_name">
-<meta property="og:description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：  R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
+<meta property="og:description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：   R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://yangjie2.github.io/2018-07-06-IM消息的可靠投递/image1.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/image1.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018-07-06-IM消息的可靠投递/image2.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018-07-06-IM消息的可靠投递/image3.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018-07-06-IM消息的可靠投递/image4.png">
-<meta property="og:updated_time" content="2018-07-09T08:41:59.672Z">
+<meta property="og:updated_time" content="2018-07-09T08:53:07.561Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="IM消息的可靠投递">
-<meta name="twitter:description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：  R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
-<meta name="twitter:image" content="https://yangjie2.github.io/2018-07-06-IM消息的可靠投递/image1.png">
+<meta name="twitter:description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：   R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/image1.png">
 
 
 
@@ -402,7 +402,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-07-09 16:41:59" itemprop="dateModified" datetime="2018-07-09T16:41:59+08:00">2018-07-09</time>
+                <time title="Modified: 2018-07-09 16:53:07" itemprop="dateModified" datetime="2018-07-09T16:53:07+08:00">2018-07-09</time>
               
             
           </span>
@@ -466,7 +466,8 @@
 
       
         <h4 id="报文类型"><a href="#报文类型" class="headerlink" title="报文类型"></a>报文类型</h4><p>im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：<br>请求报文（request，后简称为为R）<br>应答报文（acknowledge，后简称为A）<br>通知报文（notify，后简称为N），这三种报文的解释如下：</p>
-<p><img src="/2018-07-06-IM消息的可靠投递/image1.png" alt=""></p>
+<img src="/2018/07/06/IM消息的可靠投递/image1.png" title="This is an example image">
+<!-- ![](/2018-07-06-IM消息的可靠投递/image1.png) -->
 <p>R：客户端主动发送给服务器的报文<br>A：服务器被动应答客户端的报文，一个A对应一个R<br>N：服务器主动发送给客户端的报文</p>
 <a id="more"></a>
 <h4 id="普通消息投递流程"><a href="#普通消息投递流程" class="headerlink" title="普通消息投递流程"></a>普通消息投递流程</h4><p>用户A给用户B发送一个“你好”，流程如下：</p>
