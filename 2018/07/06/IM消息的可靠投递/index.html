@@ -1,4 +1,396 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> IM消息的可靠投递 · null</title><meta name="description" content="IM消息的可靠投递 - Yang Jie"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://yangjie2.github.io/atom.xml"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/categories/" target="_self" class="nav-list-link">CATEGORIES</a></li><li class="nav-list-item"><a href="/tags/" target="_self" class="nav-list-link">TAGS</a></li><li class="nav-list-item"><a href="https://github.com/yangjie2" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">IM消息的可靠投递</h1><div class="post-info">Jul 6, 2018</div><div class="post-content"><h4 id="报文类型"><a href="#报文类型" class="headerlink" title="报文类型"></a>报文类型</h4><p>im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：<br>请求报文（request，后简称为为R）<br>应答报文（acknowledge，后简称为A）<br>通知报文（notify，后简称为N），这三种报文的解释如下：</p>
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.3.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.3.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：  R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
+<meta name="keywords" content="IM,消息">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IM消息的可靠投递">
+<meta property="og:url" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：  R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/2018-07-06-IM消息的可靠投递/image1.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/2018-07-06-IM消息的可靠投递/image2.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/2018-07-06-IM消息的可靠投递/image3.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/2018-07-06-IM消息的可靠投递/image4.png">
+<meta property="og:updated_time" content="2018-07-06T11:42:40.968Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IM消息的可靠投递">
+<meta name="twitter:description" content="报文类型im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：请求报文（request，后简称为为R）应答报文（acknowledge，后简称为A）通知报文（notify，后简称为N），这三种报文的解释如下：  R：客户端主动发送给服务器的报文A：服务器被动应答客户端的报文，一个A对应一个RN：服务器主动发送给客户端的报文">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/2018-07-06-IM消息的可靠投递/image1.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>IM消息的可靠投递 | </title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">空谷无人，水流花开</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangjie2.github.io/2018/07/06/IM消息的可靠投递/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yang Jie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">IM消息的可靠投递
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-07-06 19:33:22 / Modified: 19:42:40" itemprop="dateCreated datePublished" datetime="2018-07-06T19:33:22+08:00">2018-07-06</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/IM/" itemprop="url" rel="index"><span itemprop="name">IM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="报文类型"><a href="#报文类型" class="headerlink" title="报文类型"></a>报文类型</h4><p>im的客户端与服务器通过发送报文（也就是网络包）来完成消息的传递，报文分为三种：<br>请求报文（request，后简称为为R）<br>应答报文（acknowledge，后简称为A）<br>通知报文（notify，后简称为N），这三种报文的解释如下：</p>
 <p><img src="2018-07-06-IM消息的可靠投递/image1.png" alt=""></p>
 <p>R：客户端主动发送给服务器的报文<br>A：服务器被动应答客户端的报文，一个A对应一个R<br>N：服务器主动发送给客户端的报文</p>
 <a id="more"></a>
@@ -18,4 +410,402 @@
 <h4 id="消息去重"><a href="#消息去重" class="headerlink" title="消息去重"></a>消息去重</h4><p>解决方法也很简单，由发送方client-A生成一个消息去重的msgid，保存在“等待ack队列”里，同一条消息使用相同的msgid来重传，供client-B去重，而不影响用户体验。</p>
 <h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>1）上述设计理念，由客户端重传，可以保证服务端无状态性（架构设计基本准则）<br>2）如果client-B不在线，im-server保存了离线消息后，要伪造ack:N发送给client-A</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>1）im系统是通过超时、重传、确认、去重的机制来保证消息的可靠投递，不丢不重<br>2）一个“你好”的发送，包含上半场 msg:R/A/N 与下半场 ack:R/A/N 的6个报文<br>3）im系统难以做到系统层面的不丢不重，只能做到业务层面的不丢不重</p>
-</div></article></div></main><footer><div class="paginator"><a href="/2018/07/06/Masonry布局控件frame为0的问题/" class="next">NEXT</a></div><div class="copyright"><p>© 2018 <a href="https://yangjie2.github.io">Yang Jie</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/IM/" rel="tag"># IM</a>
+          
+            <a href="/tags/消息/" rel="tag"># 消息</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/06/Masonry布局控件frame为0的问题/" rel="next" title="Masonry布局控件frame为0的问题">
+                <i class="fa fa-chevron-left"></i> Masonry布局控件frame为0的问题
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Yang Jie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#报文类型"><span class="nav-number">1.</span> <span class="nav-text">报文类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#普通消息投递流程"><span class="nav-number">2.</span> <span class="nav-text">普通消息投递流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#上述消息投递流程出现的问题"><span class="nav-number">3.</span> <span class="nav-text">上述消息投递流程出现的问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用层确认-im消息可靠投递的六个报文"><span class="nav-number">4.</span> <span class="nav-text">应用层确认+im消息可靠投递的六个报文</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可靠消息投递存在什么问题"><span class="nav-number">5.</span> <span class="nav-text">可靠消息投递存在什么问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息的超时与重传"><span class="nav-number">6.</span> <span class="nav-text">消息的超时与重传</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息的重传存在什么问题"><span class="nav-number">7.</span> <span class="nav-text">消息的重传存在什么问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#消息去重"><span class="nav-number">8.</span> <span class="nav-text">消息去重</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他"><span class="nav-number">9.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yang Jie</span>
+
+  
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> v3.7.1</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Muse</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
