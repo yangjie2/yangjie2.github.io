@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://yangjie2.github.io/"/>
-  <updated>2018-08-04T06:43:52.877Z</updated>
+  <updated>2018-08-04T09:08:52.074Z</updated>
   <id>https://yangjie2.github.io/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>[C++]虚函数,纯虚函数</title>
+    <link href="https://yangjie2.github.io/2018/08/04/C-%E8%99%9A%E5%87%BD%E6%95%B0-%E7%BA%AF%E8%99%9A%E5%87%BD%E6%95%B0/"/>
+    <id>https://yangjie2.github.io/2018/08/04/C-虚函数-纯虚函数/</id>
+    <published>2018-08-04T08:59:23.000Z</published>
+    <updated>2018-08-04T09:08:52.074Z</updated>
+    
+    <content type="html"><![CDATA[<p>参考来源：<a href="https://www.zhihu.com/question/23971699/answer/69592611" target="_blank" rel="noopener">知乎</a></p><h4 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h4><p>定义一个函数为虚函数，不代表函数为不被实现的函数。<br>定义他为虚函数是为了允许用基类的指针来调用子类的这个函数。<br>定义一个函数为纯虚函数，才代表函数没有被实现。<br>定义纯虚函数是为了实现一个接口，起到一个规范的作用，规范继承这个类的程序员必须实现这个函数。举个栗子：</p><a id="more"></a><p>假设我们有下面的类层次：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">class Animal</span><br><span class="line">&#123;  </span><br><span class="line">    public:  </span><br><span class="line">        virtual void eat()  </span><br><span class="line">        &#123;  </span><br><span class="line">            cout&lt;&lt;&quot;i eat like animals.&quot;&lt;&lt;endl;  </span><br><span class="line">        &#125;  </span><br><span class="line">&#125;;  </span><br><span class="line">class Dog:public Animal  </span><br><span class="line">&#123;  </span><br><span class="line">    public:  </span><br><span class="line">        void eat()  </span><br><span class="line">        &#123;  </span><br><span class="line">            cout&lt;&lt;&quot;i eat like a dog.&quot;&lt;&lt;endl;  </span><br><span class="line">        &#125;  </span><br><span class="line">&#125;;  </span><br><span class="line">int main(void)  </span><br><span class="line">&#123;  </span><br><span class="line">    Animal *a = new Dog();  </span><br><span class="line">    a-&gt;eat();   // 在这里，a虽然是指向Animal的指针，但是被调函数`eat()`却是`Dog`的! 。</span><br><span class="line">    return 0;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>这个例子是虚函数的一个典型应用，通过这个例子，也许你就对虚函数有了一些概念。</p><p>它虚就虚在所谓“推迟联编”或者“动态联编”上，函数的调用并不是在编译时刻被确定的，而是在运行时刻被确定的。由于编写代码的时候并不能确定被调用的是基类的函数还是哪个派生类的函数，所以被成为“虚”函数。虚函数只能借助于指针或者引用来达到多态的效果。</p><h4 id="纯虚函数"><a href="#纯虚函数" class="headerlink" title="纯虚函数"></a>纯虚函数</h4><p>定义: 纯虚函数是在基类中声明的虚函数，它在基类中没有定义，但要求任何派生类都要定义自己的实现方法。将函数定义为纯虚函数的方式如下（后面多了个 ＝0 ）：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">virtual ReturnType Function() = 0;</span><br></pre></td></tr></table></figure><p>引入原因　　<br>1、为了方便使用多态特性，我们常常需要在基类中定义虚拟函数。　　<br>2、在很多情况下，基类本身生成对象是不合情理的。例如，动物作为一个基类可以派生出老虎、孔雀等子类，但动物本身生成对象明显不合常理。</p><p>为了解决上述问题，引入了纯虚函数的概念，<br>只要在基类中定义了纯虚函数，则编译器要求在其派生类中必须予以重写以实现多态性。含有纯虚函数的类称为抽象类，抽象类它不能生成对象。</p><p>这样就很好地解决了上述两个问题。声明了纯虚函数的类是一个抽象类。所以，用户不能创建类的实例，只能创建它的派生类的实例。纯虚函数最显著的特征是：它们必须在子类中重新声明（不要后面的＝0，否则该派生类也不能实例化），而且它们在抽象类中没有定义。</p><p>定义纯虚函数的目的在于，使派生类仅仅只是继承函数的接口。纯虚函数的意义，让所有的类对象（主要是派生类对象）都可以执行纯虚函数的动作，但类无法为纯虚函数提供一个合理的缺省实现。所以类纯虚函数的声明就是在告诉子类的设计者，“你必须提供一个纯虚函数的实现，但我不知道你会怎样实现它”。</p><h4 id="抽象类"><a href="#抽象类" class="headerlink" title="抽象类"></a>抽象类</h4><p>抽象类是一种特殊的类，它是为了抽象和设计的目的为建立的，它处于继承层次结构的较上层。<br>抽象类的定义： 称带有纯虚函数的类为抽象类。<br>抽象类的作用：抽象类的主要作用是将有关的操作作为结果接口组织在一个继承层次结构中，由它来为派生类提供一个公共的根，派生类将具体实现在其基类中作为接口的操作。所以派生类实际上刻画了一组子类的操作接口的通用语义，这些语义也传给子类，子类可以具体实现这些语义，也可以再将这些语义传给自己的子类。</p><p>使用抽象类时注意：<br>• 抽象类只能作为基类来使用，其纯虚函数的实现由派生类给出。如果派生类中没有重新定义纯虚函数，而只是继承基类的纯虚函数，则这个派生类仍然还是一个抽象类。如果派生类中给出了基类纯虚函数的实现，则该派生类就不再是抽象类了，它是一个可以建立对象的具体的类。<br>• 抽象类是不能定义对象的。</p><h4 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h4><p>1、纯虚函数声明如下： <code>virtual void funtion1()=0;</code> 纯虚函数一定没有定义，纯虚函数用来规范派生类的行为，即接口。包含纯虚函数的类是抽象类，抽象类不能定义实例，但可以声明指向实现该抽象类的具体类的指针或引用。</p><p>2、虚函数声明如下：<code>virtual ReturnType FunctionName(Parameter)；</code> 虚函数必须实现，如果不实现，编译器将报错，错误提示为：<code>error LNK****: unresolved external symbol &quot;public: virtual void __thiscall ClassName::virtualFunctionName(void)&quot;</code></p><p>3、对于虚函数来说，父类和子类都有各自的版本。由多态方式调用的时候动态绑定。</p><p>4、实现了纯虚函数的子类，该纯虚函数在子类中就编程了虚函数，子类的子类即孙子类可以覆盖该虚函数，由多态方式调用的时候动态绑定。</p><p>5、虚函数是C++中用于实现多态(polymorphism)的机制。核心理念就是通过基类访问派生类定义的函数。</p><p>6、在有动态分配堆上内存的时候，析构函数必须是虚函数，但没有必要是纯虚的。</p><p>7、友元不是成员函数，只有成员函数才可以是虚拟的，因此友元不能是虚拟函数。但可以通过让友元函数调用虚拟成员函数来解决友元的虚拟问题。</p><p>8、析构函数应当是虚函数，将调用相应对象类型的析构函数，因此，如果指针指向的是子类对象，将调用子类的析构函数，然后自动调用基类的析构函数。有纯虚函数的类是抽象类，不能生成对象，只能派生。他派生的类的纯虚函数没有被改写，那么，它的派生类还是个抽象类。定义纯虚函数就是为了让基类不可实例化化因为实例化这样的抽象数据结构本身并没有意义。或者给出实现也没有意义。实际上我个人认为纯虚函数的引入，是出于两个目的1、为了安全，因为避免任何需要明确但是因为不小心而导致的未知的结果，提醒子类去做应做的实现。2、为了效率，不是程序执行的效率，而是为了编码的效率。</p><p>最后引用别人的一段生动形象的解释：</p><blockquote><p>上帝是一个程序员，创造了动物(基类)，给予了动物吃饭，睡觉，叫唤等通用功能。(封装)只指定了平均睡觉八小时(虚函数)，其中没有指定具体的吃饭，叫唤的行为。(纯虚函数)然后细分一下，动物有猫狗羊和人。(继承)人类明确它们物种的时候(明确类型的派生类指针)猫吃鱼 狗吃肉 羊吃草猫喵喵 狗汪汪 羊咩咩(多态 同名覆盖)一切都如此顺理成章。突然人发现一只动物！这只是什么呢？诶？这货不知道是啥！只能用”动物”来称呼他！(基类指针指向子类对象)当没有虚函数的时候，人类发现这只动物不会叫也不会吃！因为他根本没有这样的实现！(注意 真正编程上如果派生类不对纯虚函数进行实现将无法通过编译)有了虚函数，让那只动物”吃”，发现他吃草！于是捅一下这只动物，发现它会 哞哞叫！于是得知这是一头牛！可以吃！于是人类就把它吃掉了。总结:虚函数目的是在用基类指针指向派生类的时候还能正确调用派生的实现。</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;参考来源：&lt;a href=&quot;https://www.zhihu.com/question/23971699/answer/69592611&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;知乎&lt;/a&gt;&lt;/p&gt;
+&lt;h4 id=&quot;虚函数&quot;&gt;&lt;a href=&quot;#虚函数&quot; class=&quot;headerlink&quot; title=&quot;虚函数&quot;&gt;&lt;/a&gt;虚函数&lt;/h4&gt;&lt;p&gt;定义一个函数为虚函数，不代表函数为不被实现的函数。&lt;br&gt;定义他为虚函数是为了允许用基类的指针来调用子类的这个函数。&lt;br&gt;定义一个函数为纯虚函数，才代表函数没有被实现。&lt;br&gt;定义纯虚函数是为了实现一个接口，起到一个规范的作用，规范继承这个类的程序员必须实现这个函数。举个栗子：&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="C++ dev" scheme="https://yangjie2.github.io/categories/C-dev/"/>
+    
+    
+      <category term="C++" scheme="https://yangjie2.github.io/tags/C/"/>
+    
+  </entry>
   
   <entry>
     <title>从MVVM到ReactiveCocoa</title>
