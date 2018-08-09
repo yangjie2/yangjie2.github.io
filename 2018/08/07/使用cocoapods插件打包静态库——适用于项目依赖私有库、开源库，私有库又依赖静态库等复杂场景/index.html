@@ -110,13 +110,13 @@
 <meta property="og:site_name">
 <meta property="og:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/2018-08-07-使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png">
-<meta property="og:updated_time" content="2018-08-09T02:17:06.053Z">
+<meta property="og:updated_time" content="2018-08-09T02:26:03.483Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景">
 <meta name="twitter:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
-<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/2018-08-07-使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 
 
 
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-08-09 10:17:06" itemprop="dateModified" datetime="2018-08-09T10:17:06+08:00">2018-08-09</time>
+                <time title="Modified: 2018-08-09 10:26:03" itemprop="dateModified" datetime="2018-08-09T10:26:03+08:00">2018-08-09</time>
               
             
           </span>
@@ -537,9 +537,8 @@
 </tr>
 </tbody>
 </table>
-<p><img src="2018-08-07-使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" alt="动态库和静态库加载方式"></p>
-<a href="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="动态库和静态库加载方式">动态库和静态库加载方式</a>
-<p><strong>MacOS/iOS 里的 Framework</strong></p>
+<img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="动态库和静态库加载方式">
+<p>–<br><strong>MacOS/iOS 里的 Framework</strong></p>
 <p>除了上面提到的 .a 和 .dylib/.tbd 之外，Mac OS/iOS 平台还可以使用 Framework。Framework 是一种特殊的文件夹，将库的二进制文件，头文件和有关的资源文件打包到一起，方便管理和分发。</p>
 <p>系统的 framework 是存在于系统内部，而不会打包进 app 中。app 的启动的时候会检查所需要的动态框架是否已经加载。像 UIKit 之类的常用系统框架一般已经在内存中，就不需要再次加载，这可以保证 app 启动速度。相比静态库，framework 是自包含的，你不需要关心头文件位置等，使用起来很方便。</p>
 <p>在 iOS 8 之前，iOS 平台不支持使用动态 Framework，开发者可以使用的 Framework 只有苹果自家的 UIKit.Framework，Foundation.Framework 等。这种限制可能是出于安全的考虑。换一个角度讲，因为 iOS 应用都是运行在沙盒当中，不同的程序之间不能共享代码，同时动态下载代码又是被苹果明令禁止的，没办法发挥出动态库的优势，实际上动态库也就没有存在的必要了。</p>
@@ -576,7 +575,7 @@
 <p>配置完 podspec 之后，需要对它进行验证，没有错误和警告就能通过验证了。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pod lib lint ***.podspec  //仅本地验证</span><br><span class="line"></span><br><span class="line">或者 </span><br><span class="line"></span><br><span class="line">pod spec lint [NAME.podspec|DIRECTORY|http://PATH/NAME.podspec ...] //使用网络验证远端</span><br></pre></td></tr></table></figure>
 <p>在实际使用中，我们的pod库依赖私有库，开源库，并且依赖静态库，所以验证时需要指定 sources ，私有Repo地址和cocoapods官方的 Repo 地址，并且默认是 master 分支。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod lib lint PODNAME.podspec --sources=git@git.guahao-inc.com:yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git --use-libraries --allow-warnings</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod lib lint PODNAME.podspec --sources=git@*******:yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git --use-libraries --allow-warnings</span><br></pre></td></tr></table></figure>
 <p>–use-libraries表示依赖了静态库，–allow-warnings忽略警告。</p>
 <p>验证过程也许会比较艰难，因为总会出现各种 errors，不过基本上 google 下都能解决，这里简单记录下我遇到的两个问题: </p>
 <ol>
@@ -587,7 +586,7 @@
 <blockquote>
 <p>The difference between them is that pod lib lint does not access the network, whereas pod spec lint checks the external repo and associated tag.</p>
 </blockquote>
-<p>上面使用的是 pod lib lint 验证本地pod，其实只要保证本地和远端服务器的代码是一致的，使用 pod spec lint 肯定可以验证通过。只不过有一点需要注意，在使用 pod spec lint 时，验证的是远端,也许你会遇到这种 error：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- ERROR | [iOS] unknown: Encountered an unknown error ([!] /usr/bin/git clone git@git.guahao-inc.com:client-basic/WYAVTencentSDK.git /var/folders/8v/jks4fgp55897h3tpp65jp9680000gn/T/d20180808-84364-vuvr0v --template= --single-branch --depth 1 --branch 0.1.0</span><br><span class="line"></span><br><span class="line">Cloning into &apos;/var/folders/8v/jks4fgp55897h3tpp65jp9680000gn/T/d20180808-84364-vuvr0v&apos;...</span><br><span class="line">warning: Could not find remote branch 0.1.0 to clone.</span><br><span class="line">fatal: Remote branch 0.1.0 not found in upstream origin</span><br><span class="line">fatal: The remote end hung up unexpectedly</span><br></pre></td></tr></table></figure></p>
+<p>上面使用的是 pod lib lint 验证本地pod，其实只要保证本地和远端服务器的代码是一致的，使用 pod spec lint 肯定可以验证通过。只不过有一点需要注意，在使用 pod spec lint 时，验证的是远端,也许你会遇到这种 error：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- ERROR | [iOS] unknown: Encountered an unknown error ([!] /usr/bin/git clone git@*********/WYAVTencentSDK.git /var/folders/8v/jks4fgp55897h3tpp65jp9680000gn/T/d20180808-84364-vuvr0v --template= --single-branch --depth 1 --branch 0.1.0</span><br><span class="line"></span><br><span class="line">Cloning into &apos;/var/folders/8v/jks4fgp55897h3tpp65jp9680000gn/T/d20180808-84364-vuvr0v&apos;...</span><br><span class="line">warning: Could not find remote branch 0.1.0 to clone.</span><br><span class="line">fatal: Remote branch 0.1.0 not found in upstream origin</span><br><span class="line">fatal: The remote end hung up unexpectedly</span><br></pre></td></tr></table></figure></p>
 <p>它提示你找不到 0.1.0 这个分支（因为在 podspec 文件中我们指定了 s.version = ‘0.1.0’），当然找不到了，因为确实没有这个分支。因为我们暂时还没有打 0.1.0 这个tag。当我打了 0.1.0 tag 后，再次使用 pod spec lint 验证，就顺利通过了。</p>
 <p>到现在为止，我们完成了对 pod 库的配置，并且打了tag。接下来就开始打包静态库！</p>
 <h4 id="打包静态库-1"><a href="#打包静态库-1" class="headerlink" title="打包静态库"></a>打包静态库</h4><p>需要安装一个 CocoaPods 打包插件 <code>cocoapods-packager</code>。终端执行安装命令：<code>sudo gem install cocoapods-packager</code>，等待安装完成。</p>
@@ -595,7 +594,7 @@
 <p>cocoapods-packager allows you to generate a framework or static library from a podspec.</p>
 </blockquote>
 <p>执行以下命令，开始打包静态库</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pod package YJDemoSDK.podspec --library --force --no-mangle --spec-sources=http://git.guahao-inc.com/yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git</span><br><span class="line"># --library 表示打包成.a文件。--force 表示强制覆盖之前存在的文件</span><br><span class="line"></span><br><span class="line">pod package YJDemoSDK.podspec --force --no-mangle --spec-sources=http://git.guahao-inc.com/yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git</span><br><span class="line"># 没有--library，则打包成.framework文件</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pod package YJDemoSDK.podspec --library --force --no-mangle --spec-sources=http://*******/yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git</span><br><span class="line"># --library 表示打包成.a文件。--force 表示强制覆盖之前存在的文件</span><br><span class="line"></span><br><span class="line">pod package YJDemoSDK.podspec --force --no-mangle --spec-sources=http:*****/yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git</span><br><span class="line"># 没有--library，则打包成.framework文件</span><br></pre></td></tr></table></figure>
 <p>–no-mangle，表示Do not mangle symbols of depedendant Pods，当你的项目依赖包含静态库时，不加上这句，就会打包失败：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[!] podspec has binary-only depedencies,mangling not possible.</span><br></pre></td></tr></table></figure></p>
 <p>打包完成，生成的静态库放在 pod 库路径下 PODNAME-0.1.0 文件夹中。若是 .a 类型的静态库，是没有头文件的，需要手动将头文件拷贝过来才能正常使用。而 framework 则可以直接放在项目中使用。</p>
 <p><strong>使用含有category的静态库时, selector not recognized的解决方案</strong></p>
