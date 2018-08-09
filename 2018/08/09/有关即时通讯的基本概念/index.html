@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next mist" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="刚接触开发IM时，几个基本的概念把我搞得晕头转向，比如：  Socket 和 WebSocket 有哪些区别和联系？ WebSocket 和 HTTP 有什么关系？ WebSocket 和 HTML5 是什么关系？ 什么是 长连接/短连接、长轮询/短轮询? WebSocket在哪些场景下使用？ 如果想做IOS的即时通讯，是使用Socket还是WebSocket?  通过google查找了大量资">
+<meta property="og:type" content="article">
+<meta property="og:title" content="有关即时通讯的基本概念">
+<meta property="og:url" content="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="刚接触开发IM时，几个基本的概念把我搞得晕头转向，比如：  Socket 和 WebSocket 有哪些区别和联系？ WebSocket 和 HTTP 有什么关系？ WebSocket 和 HTML5 是什么关系？ 什么是 长连接/短连接、长轮询/短轮询? WebSocket在哪些场景下使用？ 如果想做IOS的即时通讯，是使用Socket还是WebSocket?  通过google查找了大量资">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/长轮询.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/webSocket1.jpg">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/webSocket2.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/socket.png">
+<meta property="og:updated_time" content="2018-08-09T03:25:22.067Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="有关即时通讯的基本概念">
+<meta name="twitter:description" content="刚接触开发IM时，几个基本的概念把我搞得晕头转向，比如：  Socket 和 WebSocket 有哪些区别和联系？ WebSocket 和 HTTP 有什么关系？ WebSocket 和 HTML5 是什么关系？ 什么是 长连接/短连接、长轮询/短轮询? WebSocket在哪些场景下使用？ 如果想做IOS的即时通讯，是使用Socket还是WebSocket?  通过google查找了大量资">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/长轮询.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>有关即时通讯的基本概念 | </title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">空谷无人，水流花开</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />Categories</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />Tags</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />About</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yang Jie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">有关即时通讯的基本概念
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-08-09 10:52:02 / Modified: 11:25:22" itemprop="dateCreated datePublished" datetime="2018-08-09T10:52:02+08:00">2018-08-09</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/08/09/有关即时通讯的基本概念/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2018/08/09/有关即时通讯的基本概念/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>刚接触开发IM时，几个基本的概念把我搞得晕头转向，比如：</p>
+<ol>
+<li>Socket 和 WebSocket 有哪些区别和联系？</li>
+<li>WebSocket 和 HTTP 有什么关系？</li>
+<li>WebSocket 和 HTML5 是什么关系？</li>
+<li>什么是 长连接/短连接、长轮询/短轮询?</li>
+<li>WebSocket在哪些场景下使用？</li>
+<li>如果想做IOS的即时通讯，是使用Socket还是WebSocket?</li>
+</ol>
+<p>通过google查找了大量资料，觉得有必要把相关内容做一个整理，上面几个问题也会在叙述中逐渐清晰。</p>
+<a id="more"></a>
+<h3 id="1-Socket-和-WebSocket-有哪些区别和联系？"><a href="#1-Socket-和-WebSocket-有哪些区别和联系？" class="headerlink" title="1. Socket 和 WebSocket 有哪些区别和联系？"></a>1. Socket 和 WebSocket 有哪些区别和联系？</h3><p>就像<code>Java</code>和<code>JavaScript</code>，<code>北大</code>和<code>北大青鸟</code>，<code>雷锋</code>和<code>雷峰塔</code>一样，没有什么关系，除了在名字上沾亲带故的以外，就是两个完全不同的东西。</p>
+<h5 id="WebSocket"><a href="#WebSocket" class="headerlink" title="WebSocket"></a>WebSocket</h5><blockquote>
+<p>WebSocket一种在单个TCP连接上进行全双工通讯的协议。WebSocket通信协议于2011年被IETF定为标准RFC 6455，并被RFC7936所补充规范。WebSocket API也被W3C定为标准。——维基百科</p>
+</blockquote>
+<p>背景：</p>
+<p>现在，很多网站为了实现<a href="https://zh.wikipedia.org/wiki/%E6%8E%A8%E9%80%81%E6%8A%80%E6%9C%AF" target="_blank" rel="noopener">推送技术</a>，所用的技术都是<a href="https://zh.wikipedia.org/wiki/%E8%BC%AA%E8%A9%A2" target="_blank" rel="noopener">轮询</a>。轮询是在特定的时间间隔（如每1秒）由客户端对服务器发出HTTP请求，然后由服务器返回最新的数据给客户端。这种传统的模式带来很明显的缺点，即客户端需要不断的向服务器发出请求，然而HTTP请求可能包含较长的<a href="https://zh.wikipedia.org/wiki/HTTP%E5%A4%B4%E5%AD%97%E6%AE%B5%E5%88%97%E8%A1%A8" target="_blank" rel="noopener">头部</a>，其中真正有效的数据可能只是很小的一部分，显然这样会浪费很多的带宽等资源。</p>
+<p>而比较新的技术去做轮询的效果是<a href="https://zh.wikipedia.org/wiki/Comet_(web%E6%8A%80%E6%9C%AF" target="_blank" rel="noopener">Comet</a>)。这种技术虽然可以双向通信，但依然需要反复发出请求。而且在Comet中，普遍采用的<a href="https://zh.wikipedia.org/wiki/HTTP%E6%8C%81%E4%B9%85%E9%93%BE%E6%8E%A5" target="_blank" rel="noopener">长链接</a>，也会消耗服务器资源。<br>在这种情况下，<a href="https://zh.wikipedia.org/wiki/HTML5" target="_blank" rel="noopener">HTML5</a>定义了WebSocket协议，能更好的节省服务器资源和带宽，并且能够更实时地进行通讯。<br>Websocket使用ws或wss的<a href="https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E6%A0%87%E5%BF%97%E7%AC%A6" target="_blank" rel="noopener">统一资源标志符</a>，类似于<a href="https://zh.wikipedia.org/wiki/HTTPS" target="_blank" rel="noopener">HTTPS</a>，其中wss表示在<a href="https://zh.wikipedia.org/wiki/TLS" target="_blank" rel="noopener">TLS</a>之上的Websocket。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ws://example.com/wsapi</span><br><span class="line">wss://secure.example.com/</span><br></pre></td></tr></table></figure></p>
+<p>Websocket使用和 HTTP 相同的 TCP <a href="https://zh.wikipedia.org/wiki/TCP/UDP%E7%AB%AF%E5%8F%A3%E5%88%97%E8%A1%A8" target="_blank" rel="noopener">端口</a>，可以绕过大多数防火墙的限制。默认情况下，Websocket协议使用80端口；运行在TLS之上时，默认使用443端口。</p>
+<h5 id="WebSocket出现的目的：即时通讯，替代HTTP轮询"><a href="#WebSocket出现的目的：即时通讯，替代HTTP轮询" class="headerlink" title="WebSocket出现的目的：即时通讯，替代HTTP轮询"></a>WebSocket出现的目的：即时通讯，替代HTTP轮询</h5><p>WebSocket 使得客户端和服务器之间的数据交换变得更加简单，允许服务端主动向客户端推送数据。在 WebSocket API 中，浏览器和服务器只需要完成一次握手，两者之间就直接可以创建持久性的连接，并进行双向数据传输。</p>
+<p><strong>最初的轮询(polling)阶段</strong></p>
+
+<p>上图表明，客户端发送一个request，服务器不管有没有新消息，都会立即返回一个response，然后关闭连接，这次HTTP请求结束。请记住 Request = Response ， 在HTTP1.0和HTTP1.1中都是这样，也就是说一个request只能有一个response对应。客户端需要不断执行这个请求过程(也就是轮询)，查询服务端有没有新的消息(数据)。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">轮询场景：</span><br><span class="line"></span><br><span class="line">Client：亲亲，有没有新消息(Request)</span><br><span class="line">Server：木有（Response）</span><br><span class="line">Client：亲亲，有没有新消息(Request)</span><br><span class="line">Server：木有。。（Response）</span><br><span class="line">Client：亲亲，有没有新消息(Request)</span><br><span class="line">Server：好烦，没有。。（Response）</span><br><span class="line">Client：那个。。有没有新消息（Request）</span><br><span class="line">Server: 有啦，给你（Response）</span><br><span class="line">Client：亲亲，有没有新消息（Request）</span><br><span class="line">Server：。。没。。。没有（Response）</span><br><span class="line">...</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>从上面可以看出来，客户端不断的建立HTTP连接，然后等待服务端处理，可以提现HTTP协议的另一个缺陷：<strong>被动性</strong>，也就是服务端不能主动联系客户端，只能有客户端发起。而且，HTTP request的Header是很长的，为了传输一个很小的数据却占用了很多的带宽流量去传输Header。可见，轮询需要服务器有很快的处理速度，且非常消耗资源，也不具备即时性。</p>
+<p><strong>长轮询 (Long polling) 阶段</strong></p>
+<img src="/2018/08/09/有关即时通讯的基本概念/长轮询.png">
+<p>Long Polling 是对 Polling 的改进，原理跟 Polling 相似，都是采用轮询的方式，不过Long Polling 采取的是阻塞模型：客户端发起连接后，如果服务端没有新消息，就一直不返回Response给客户端。直到有新消息或者超时才返回给客户端，返回之后这次请求结束。客户端再次建立连接，重复这个过程。。。。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">情景：</span><br><span class="line">Client：亲亲，有没有新消息? 没有的话，等有了再给我吧 (Request)</span><br><span class="line">Server：额。。。~~~ (1小时后) ~~~ 有新消息了，给你 (Response)</span><br><span class="line">...</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>相比于 Polling ，Long Polling 在某种程度上减小了对网络宽带的消耗等问题，但缺陷也很明显：假设服务器端的数据更新速度很快，服务器在传送一个数据包给客户端后必须等待客户端的下一个Get请求到来，才能传递第二个更新的数据包给客户端，那么这样的话，客户端显示实时数据最快的时间为2×RTT（往返时间），而且如果在网络拥塞的情况下，这个时间用户是不能接受的，比如在股市的的报价上；另外，由于http数据包的头部数据量往往很大（通常有400多个字节），但是真正被服务器需要的数据却很少（有时只有10个字节左右），这样的数据包在网络上周期性的传输，难免对网络带宽是一种浪费；而且 Long Polling 要求服务器具有高并发性，也就是同时接待大量客户端的能力。</p>
+<p><strong>WebSocket</strong><br>从上面分析可以看出，Polling ，Long Polling 不是最好的方式，Polling 需要服务端更快的处理速度，Long Polling 需要高并发性。在这种情况下，WebSocket出现，解决了上面提到的 HTTP 协议存在的几个缺陷。</p>
+<p>下面三张图，是WebSocket建立连接、传输数据以及关闭连接的模型，至于为什么放三张相似的图，因为。。。我觉得这三张图都挺好看的</p>
+<img src="/2018/08/09/有关即时通讯的基本概念/webSocket1.jpg">
+<img src="/2018/08/09/有关即时通讯的基本概念/webSocket2.png">
+<p>–<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">情景：</span><br><span class="line">Client：亲亲，我要建立WebSocket协议，需要的服务：chat，WebSocket协议版本:17 （HTTP Request）</span><br><span class="line">Server：ok，确认，已升级为WebSocket协议 （HTTP Protocols Switched）</span><br><span class="line">Client：麻烦你有新消息的时候推送给我哦。。</span><br><span class="line">Server：ok，有的时候会告诉你的。</span><br><span class="line">Server：balabalabalabala</span><br><span class="line">Server：balabalabalabala</span><br><span class="line">Server：我看到一个笑话，哈哈哈</span><br><span class="line">Server：哈哈哈哈哈哈哈。。。。。</span><br></pre></td></tr></table></figure></p>
+<p>Websocket是应用层第七层上的一个应用层协议，它必须依赖 <a href="http://tools.ietf.org/html/rfc6455#section-4" target="_blank" rel="noopener">HTTP 协议进行一次握手</a> ，握手成功后，数据就直接从 TCP 通道传输，与 HTTP 无关了。<br>Websocket的数据传输是以 frame (帧) 形式传输的，比如会将一条消息分为几个 frame，按照先后顺序传输出去。这样做会有几个好处：</p>
+<ol>
+<li>大数据的传输可以分片传输，不用考虑到数据大小导致的长度标志位不足够的情况。</li>
+<li>和 HTTP 的chunk一样，可以边生成数据边传递消息，即提高传输效率。</li>
+</ol>
+<p>一个典型的Websocket握手请求如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">客户端请求</span><br><span class="line">GET / HTTP/1.1</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Host: example.com</span><br><span class="line">Origin: http://example.com</span><br><span class="line">Sec-WebSocket-Key: sN9cRrP/n9NdMgdcy2VJFQ==</span><br><span class="line">Sec-WebSocket-Version: 13</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">服务器回应</span><br><span class="line">HTTP/1.1 101 Switching Protocols</span><br><span class="line">Upgrade: websocket</span><br><span class="line">Connection: Upgrade</span><br><span class="line">Sec-WebSocket-Accept: fFBooB7FAkLlXgRSz0BT3v4hq5s=</span><br><span class="line">Sec-WebSocket-Location: ws://example.com/</span><br></pre></td></tr></table></figure>
+<p>字段说明:</p>
+<ol>
+<li>Connection必须设置Upgrade，表示客户端希望连接升级。</li>
+<li>Upgrade字段必须设置Websocket，表示希望升级到Websocket协议。</li>
+<li>Sec-WebSocket-Key是随机的字符串，服务器端会用这些数据来构造出一个SHA-1的信息摘要。把“Sec-WebSocket-Key”加上一个特殊字符串“258EAFA5-E914-47DA-95CA-C5AB0DC85B11”，然后计算<a href="https://zh.wikipedia.org/wiki/SHA-1" target="_blank" rel="noopener">SHA-1</a>摘要，之后进行<a href="https://zh.wikipedia.org/w/index.php?title=BASE-64&amp;action=edit&amp;redlink=1" target="_blank" rel="noopener">BASE-64</a>编码，将结果做为“Sec-WebSocket-Accept”头的值，返回给客户端。如此操作，可以尽量避免普通HTTP请求被误认为Websocket协议。</li>
+<li>Sec-WebSocket-Version 表示支持的Websocket版本。RFC6455要求使用的版本是13，之前草案的版本均应当被弃用。</li>
+<li>Origin字段是可选的，通常用来表示在浏览器中发起此Websocket连接所在的页面，类似于<a href="https://zh.wikipedia.org/wiki/HTTP%E6%9D%A5%E6%BA%90%E5%9C%B0%E5%9D%80" target="_blank" rel="noopener">Referer</a>。但是，于Referer不同的是，Origin只包含了协议和主机名称。</li>
+<li>其他一些定义在HTTP协议中的字段，如<a href="https://zh.wikipedia.org/wiki/Cookie" target="_blank" rel="noopener">Cookie</a>等，也可以在Websocket中使用。</li>
+</ol>
+<h5 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h5><p>Socket并不是一个协议，而是为了方便使用TCP或UDP而抽象出来的一层，是位于应用层和传输控制层之间的一组接口。如果你要使用HTTP来构建服务，那么就不需要关心Socket，如果你想基于TCP/IP来构建服务，那么Socket可能就是你会接触到的API。</p>
+<blockquote>
+<p>网络上的两个程序通过一个双向的通信连接实现数据的交换，这个连接的一端称为一个socket。<br>建立网络通信连接至少要一对端口号(socket)。socket本质是编程接口(API)，对TCP/IP的封装，<br>TCP/IP也要提供可供程序员做网络开发所用的接口，这就是Socket编程接口；<br>HTTP是轿车，提供了封装或者显示数据的具体形式;Socket是发动机，提供了网络通信的能力。—— 百度百科</p>
+</blockquote>
+<blockquote>
+<p>Socket是应用层与TCP/IP协议族通信的中间软件抽象层，它是一组接口。<br>在设计模式中，Socket其实就是一个门面模式，它把复杂的TCP/IP协议族隐藏在Socket接口后面，<br>对用户来说，一组简单的接口就是全部，让Socket去组织数据，以符合指定的协议。  —— XX百科</p>
+</blockquote>
+<img src="/2018/08/09/有关即时通讯的基本概念/socket.png">
+<p>当两台主机通信时，必须通过Socket连接，Socket则利用TCP/IP协议建立TCP连接。<br>TCP连接则更依靠于底层的IP协议，IP协议的连接则依赖于链路层等更低层次。<br>WebSocket则是一个典型的应用层协议。</p>
+<h3 id="2-WebSocket-和-HTTP-有什么关系？"><a href="#2-WebSocket-和-HTTP-有什么关系？" class="headerlink" title="2. WebSocket 和 HTTP 有什么关系？"></a>2. WebSocket 和 HTTP 有什么关系？</h3><p>先看一下这两个概念在维基百科中的解释：</p>
+<blockquote>
+<p>WebSocket is a computer <a href="https://en.wikipedia.org/wiki/Communications_protocol" target="_blank" rel="noopener">communications protocol</a>, providing <a href="https://en.wikipedia.org/wiki/Full-duplex" target="_blank" rel="noopener">full-duplex</a> communication channels over a single <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol" target="_blank" rel="noopener">TCP</a> connection. The WebSocket protocol was standardized by the <a href="https://en.wikipedia.org/wiki/Internet_Engineering_Task_Force" target="_blank" rel="noopener">IETF</a> as <a href="https://en.wikipedia.org/wiki/Request_for_Comments" target="_blank" rel="noopener">RFC</a> 6455 in 2011, and the WebSocket <a href="https://en.wikipedia.org/wiki/Application_programming_interface" target="_blank" rel="noopener">API</a> in <a href="https://en.wikipedia.org/wiki/Web_IDL" target="_blank" rel="noopener">Web IDL</a> is being standardized by the <a href="https://en.wikipedia.org/wiki/World_Wide_Web_Consortium" target="_blank" rel="noopener">W3C</a>.<br>WebSocket is designed to be implemented in <a href="https://en.wikipedia.org/wiki/Web_browser" target="_blank" rel="noopener">web browsers</a> and <a href="https://en.wikipedia.org/wiki/Web_server" target="_blank" rel="noopener">web servers</a>, but it can be used by any client or server application. The WebSocket Protocol is an independent TCP-based protocol. Its only relationship to <a href="https://en.wikipedia.org/wiki/HTTP" target="_blank" rel="noopener">HTTP</a> is that its <a href="https://en.wikipedia.org/wiki/Handshaking" target="_blank" rel="noopener">handshake</a> is interpreted by HTTP servers as an <a href="https://en.wikipedia.org/wiki/HTTP/1.1_Upgrade_header" target="_blank" rel="noopener">Upgrade request</a>.<a href="https://en.wikipedia.org/wiki/WebSocket#cite_note-1" target="_blank" rel="noopener">[1]</a><br> The WebSocket protocol enables interaction between a browser and a web server with lower overheads, facilitating real-time data transfer from and to the server. This is made possible by providing a standardized way for the server to send content to the browser without being solicited by the client, and allowing for messages to be passed back and forth while keeping the connection open. In this way, a two-way (bi-directional) ongoing conversation can take place between a browser and the server. The communications are done over TCP <a href="https://en.wikipedia.org/wiki/Port_(computer_networking" target="_blank" rel="noopener">port</a>) number 80 (or 443 in the case of <a href="https://en.wikipedia.org/wiki/Transport_Layer_Security" target="_blank" rel="noopener">TLS</a>-encrypted connections), which is of benefit for those environments which block non-web Internet connections using a <a href="https://en.wikipedia.org/wiki/Firewall_(computing" target="_blank" rel="noopener">firewall</a>). </p>
+<p>—— From Wikipedia, the free encyclopedia</p>
+</blockquote>
+<blockquote>
+<p>The <strong>Hypertext Transfer Protocol</strong> (<strong>HTTP</strong>) is an <a href="https://en.wikipedia.org/wiki/Application_protocol" target="_blank" rel="noopener">application protocol</a> for distributed, collaborative, and <a href="https://en.wikipedia.org/wiki/Hypermedia" target="_blank" rel="noopener">hypermedia</a> information systems.<br> HTTP is the foundation of data communication for the <a href="https://en.wikipedia.org/wiki/World_Wide_Web" target="_blank" rel="noopener">World Wide Web</a>.<br><a href="https://en.wikipedia.org/wiki/Hypertext" target="_blank" rel="noopener">Hypertext</a> is structured text that uses logical links (<a href="https://en.wikipedia.org/wiki/Hyperlinks" target="_blank" rel="noopener">hyperlinks</a>) between <a href="https://en.wikipedia.org/wiki/Node_(computer_science" target="_blank" rel="noopener">nodes</a>) containing text. HTTP is the protocol to exchange or transfer hypertext.<br>Development of HTTP was initiated by <a href="https://en.wikipedia.org/wiki/Tim_Berners-Lee" target="_blank" rel="noopener">Tim Berners-Lee</a> at <a href="https://en.wikipedia.org/wiki/CERN" target="_blank" rel="noopener">CERN</a> in 1989. Standards development of HTTP was coordinated by the <a href="https://en.wikipedia.org/wiki/Internet_Engineering_Task_Force" target="_blank" rel="noopener">Internet Engineering Task Force</a> (IETF) and the <a href="https://en.wikipedia.org/wiki/World_Wide_Web_Consortium" target="_blank" rel="noopener">World Wide Web Consortium</a> (W3C), culminating in the publication of a series of <a href="https://en.wikipedia.org/wiki/Requests_for_Comments" target="_blank" rel="noopener">Requests for Comments</a> (RFCs). The first definition of HTTP/1.1, the version of HTTP in common use, occurred in <a href="https://tools.ietf.org/html/rfc2068" target="_blank" rel="noopener">RFC 2068</a> in 1997, although this was obsoleted by <a href="https://tools.ietf.org/html/rfc2616" target="_blank" rel="noopener">RFC 2616</a> in 1999 and then again by <a href="https://tools.ietf.org/html/rfc7230" target="_blank" rel="noopener">RFC 7230</a> and family in 2014.<br>A later version, the successor <a href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank" rel="noopener">HTTP/2</a>, was standardized in 2015, and is now supported by major web servers.</p>
+<p>—— From Wikipedia, the free encyclopedia</p>
+</blockquote>
+<p>相同点：<br>WebSocket 和 HTTP 都是基于TCP的应用层协议，都是可靠性传输协议。</p>
+<p>不同点：</p>
+<ol>
+<li>本来就是两种完全不同的协议。。。</li>
+<li>WebSocket 是全双工协议，可以双向发送或接受信息，连接建立之后，通信双方都可以在任何时刻向另一方发送数据。HTTP请求需要等待客户端发起请求服务端才能响应。</li>
+<li>与 HTTP 不同的是，Websocket 需要先创建连接，这就使得其成为一种有状态的协议，之后通信时可以省略部分状态信息。而HTTP请求可能需要在每个请求都携带状态信息（如身份认证等）</li>
+<li>Websocket定义了<a href="https://zh.wikipedia.org/wiki/%E4%BA%8C%E8%BF%9B%E5%88%B6" target="_blank" rel="noopener">二进制</a>帧，相对HTTP，可以更轻松地处理二进制内容。</li>
+<li>HTTP 协议要不断的建立，关闭Request，由于HTTP是无状态协议，每一次发送都是一次新的开始，所以每次都要重新传输identity info (鉴别信息)，来告诉服务端你是谁。Websocket 只需要一次HTTP握手，所以说整个通讯过程是建立在一次连接状态中，也就避免了HTTP的非状态性，服务端会一直知道你的信息，直到你关闭请求，这样就可以避免反复解析HTTP协议，还要查看identity info（鉴别信息）。</li>
+</ol>
+<p>联系：<br>Websocket 通过 <a href="https://zh.wikipedia.org/wiki/HTTP" target="_blank" rel="noopener">HTTP</a>/1.1 协议的101<a href="https://zh.wikipedia.org/wiki/HTTP%E7%8A%B6%E6%80%81%E7%A0%81" target="_blank" rel="noopener">状态码</a>进行握手。<br>为了创建Websocket连接，需要通过客户端发出请求，之后服务器进行回应，这个过程通常称为“<a href="https://zh.wikipedia.org/wiki/%E6%8F%A1%E6%89%8B_(%E6%8A%80%E6%9C%AF" target="_blank" rel="noopener">握手</a>)”（handshaking）。</p>
+<p>虽然WebSocket在握手的时候是通过 HTTP 进行的（为了兼容性考虑，也许以后WebSocket会有自己的握手方式），但也仅仅是这样而已，它们就是两种不同的应用层协议。</p>
+<h3 id="3-WebSocket-和-HTML5-是什么关系？"><a href="#3-WebSocket-和-HTML5-是什么关系？" class="headerlink" title="3. WebSocket 和 HTML5 是什么关系？"></a>3. WebSocket 和 HTML5 是什么关系？</h3><p>HTML5是指的一系列新的API，或者说新规范，新技术。而WebSocket就是HTML5中出的的一种协议。</p>
+<h3 id="4-什么是-长连接-短连接、长轮询-短轮询"><a href="#4-什么是-长连接-短连接、长轮询-短轮询" class="headerlink" title="4. 什么是 长连接/短连接、长轮询/短轮询?"></a>4. 什么是 长连接/短连接、长轮询/短轮询?</h3><p>查了许多资料，于是总结一下自己的理解：</p>
+<p>长连接/短连接，长轮询/短轮询 本身就是不通层次的概念。</p>
+<p>长/短连接 是针对TCP传输层的概念，也就是，TCP连接才有长/短连接之说。</p>
+<p>短连接是指通讯双方有数据交互时，就建立一个TCP连接，数据发送完成后，则断开此连接，即每次连接只完成一项业务的发送。</p>
+<p>长连接指在一个TCP连接上可以连续发送多个数据包，在连接保持期间，如果没有数据包发送，需要TCP keep alive。TCP keep alive 的两种方式：</p>
+<ol>
+<li>应用层面的心跳机制<br>自定义心跳消息头 ： 一般客户端主动发送, 服务器接收后进行回应(也可以不回应).</li>
+<li>TCP协议自带的 keep alive：打开keep-alive功能即可. 具体属性也可以通过API设定.</li>
+</ol>
+<p>TCP KeepAlive 是用于检测TCP连接的状态，而心跳机制有两个作用：一是检测TCP的状态，二是检测通讯双方的状体。</p>
+<p>考虑一种情况，某台服务器因为某些原因导致负载超高，CPU 100%，无法响应任何业务请求，但是使用 TCP 探针则仍旧能够确定连接状态，这就是典型的连接活着但业务提供方已死的状态，对客户端而言，这时的最好选择就是断线后重新连接其他服务器，而不是一直认为当前服务器是可用状态，一直向当前服务器发送些必然会失败的请求。</p>
+<p>从上面我们可以知道，KeepAlive 并不适用于检测双方存活的场景，这种场景还得依赖于应用层的心跳。应用层心跳有着更大的灵活性，可以控制检测时机，间隔和处理流程，甚至可以在心跳包上附带额外信息。从这个角度而言，应用层的心跳的确是最佳实践。</p>
+<p>写到这顺便说一下 <a href="http://stackoverflow.com/questions/9334401/http-keep-alive-and-tcp-keep-alive" target="_blank" rel="noopener">HTTP Keep Alive 和 TCP keep alive</a> 这两个看上去肯定有点儿啥关系的概念。事实上，HTTP keep-alive与TCP keep-alive 是两个完全没有关系的东西。</p>
+<p>HTTP keep-alive是HTTP协议的一个特性，目的是为了让TCP连接保持的更久一点，以便客户端/服务端在同一个TCP连接上可以发送多个HTTP  request/response。</p>
+<p>TCP keep-alive是一种检测连接状况的保活机制。It keeps TCP connection opened by sending small packets. 当网络两端建立了TCP连接之后，闲置idle（双方没有任何数据流发送往来）了tcp_keepalive_time后，服务器内核就会尝试向客户端发送侦测包，来判断TCP连接状况(有可能客户端崩溃、强制关闭了应用、主机不可达等等)。如果没有收到对方的回答(ack包)，则会在 tcp_keepalive_intvl后再次尝试发送侦测包，直到收到对对方的ack,如果一直没有收到对方的ack,一共会尝试 tcp_keepalive_probes次，每次的间隔时间在这里分别是15s, 30s, 45s, 60s, 75s。如果尝试tcp_keepalive_probes,依然没有收到对方的ack包，则会丢弃该TCP连接。TCP连接默认闲置时间是2小时，一般设置为30分钟足够了。</p>
+<p>既然长/短连接是针对TCP的概念，但是我们却经常看到<code>HTTP 长连接（HTTP persistent connection）</code>这样的说法，到底什么鬼？憋急，先看一段解释：</p>
+<blockquote>
+<p><strong>HTTP persistent connection</strong>, also called <strong>HTTP keep-alive</strong>, or <strong>HTTP connection reuse</strong>, is the idea of using a single <a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol" target="_blank" rel="noopener">TCP</a> connection to send and receive multiple <a href="https://en.wikipedia.org/wiki/HTTP_request" target="_blank" rel="noopener">HTTP requests</a>/responses, as opposed to opening a new connection for every single request/response pair. The newer <a href="https://en.wikipedia.org/wiki/HTTP/2" target="_blank" rel="noopener">HTTP/2</a> protocol uses the same idea and takes it further to allow multiple concurrent requests/responses to be multiplexed over a single connection.</p>
+<p>—— From Wikipedia, the free encyclopedia</p>
+</blockquote>
+<p>可以发现，<code>HTTP persistent connection</code>就是上面我们解释的<code>HTTP Keep Alive</code>。其实很简单，TCP长连接是针对TCP层的概念，就是让一个TCP连接长时间保持不要断开。HTTP的长连接(keep alive)是HTTP协议的一个特性，也是希望保持住长时间的TCP连接，才能在这个TCP通道上发送多个HTTP请求，而不必每次请求都打开一个新的TCP连接。</p>
+<p>长轮询/短轮询 在上文已经介绍了，它是服务器的实现方式！由服务端编写的代码决定。</p>
+<h3 id="5-WebSocket在哪些场景下使用？"><a href="#5-WebSocket在哪些场景下使用？" class="headerlink" title="5. WebSocket在哪些场景下使用？"></a>5. WebSocket在哪些场景下使用？</h3><p>1.社交聊天</p>
+<p>最著名的就是微信，QQ，这一类社交聊天的app。这一类聊天app的特点是低延迟，高即时。即时是这里面要求最高的，如果有一个紧急的事情，通过IM软件通知你，假设网络环境良好的情况下，这条message还无法立即送达到你的客户端上，紧急的事情都结束了，你才收到消息，那么这个软件肯定是失败的。</p>
+<p>2.弹幕</p>
+<p>说到这里，大家一定里面想到了A站和B站了。确实，他们的弹幕一直是一种特色。而且弹幕对于一个视频来说，很可能弹幕才是精华。发弹幕需要实时显示，也需要和聊天一样，需要即时。</p>
+<p>3.多玩家游戏</p>
+<p>4.协同编辑</p>
+<p>现在很多开源项目都是分散在世界各地的开发者一起协同开发，此时就会用到版本控制系统，比如Git，SVN去合并冲突。但是如果有一份文档，支持多人实时在线协同编辑，那么此时就会用到比如WebSocket了，它可以保证各个编辑者都在编辑同一个文档，此时不需要用到Git，SVN这些版本控制，因为在协同编辑界面就会实时看到对方编辑了什么，谁在修改哪些段落和文字。</p>
+<p>5.股票基金实时报价</p>
+<p>金融界瞬息万变——几乎是每毫秒都在变化。如果采用的网络架构无法满足实时性，那么就会给客户带来巨大的损失。几毫秒钱股票开始大跌，几秒以后才刷新数据，一秒钟的时间内，很可能用户就已经损失巨大财产了。</p>
+<p>6.体育实况更新</p>
+<p>全世界的球迷，体育爱好者特别多，当然大家在关心自己喜欢的体育活动的时候，比赛实时的赛况是他们最最关心的事情。这类新闻中最好的体验就是利用Websocket达到实时的更新！</p>
+<p>7.视频会议/聊天</p>
+<p>视频会议并不能代替和真人相见，但是他能让分布在全球天涯海角的人聚在电脑前一起开会。既能节省大家聚在一起路上花费的时间，讨论聚会地点的纠结，还能随时随地，只要有网络就可以开会。</p>
+<p>8.基于位置的应用</p>
+<p>越来越多的开发者借用移动设备的GPS功能来实现他们基于位置的网络应用。如果你一直记录用户的位置(比如运行应用来记录运动轨迹)，你可以收集到更加细致化的数据。</p>
+<p>9.在线教育</p>
+<p>在线教育近几年也发展迅速。优点很多，免去了场地的限制，能让名师的资源合理的分配给全国各地想要学习知识的同学手上，Websocket是个不错的选择，可以视频聊天、即时聊天以及其与别人合作一起在网上讨论问题…</p>
+<p>10.智能家居</p>
+<p>这也是我一毕业加入的一个伟大的物联网智能家居的公司。考虑到家里的智能设备的状态必须需要实时的展现在手机app客户端上，毫无疑问选择了Websocket。</p>
+<p>从上面我列举的这些场景来看，一个共同点就是，高实时性！</p>
+<p>###6 . 如果做即时通讯，是使用Socket还是WebSocket?</p>
+<p>使用 Socket 和 WebSocket 都可以做即时通讯。具体怎么做呢？公司项目IOS端使用了第三方库 CocoaAsynSocket ，它是对socket的OC封装，支持TCP、UDP连接。CocoaAsynSocket 的使用非常简单，也有官方和其他资料可以查找，这里就不啰嗦了。这篇文章只是对即时通讯涉及的一些基本概念，根据我自己的理解做一个总结和记录.</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/" rel="next" title="使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景">
+                <i class="fa fa-chevron-left"></i> 使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Yang Jie" />
+            
+              <p class="site-author-name" itemprop="name">Yang Jie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/yangjie2" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://stackoverflow.com/users/8227142/y-jie" target="_blank" title="StackOverflow"><i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Socket-和-WebSocket-有哪些区别和联系？"><span class="nav-number">1.</span> <span class="nav-text">1. Socket 和 WebSocket 有哪些区别和联系？</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#WebSocket"><span class="nav-number">1.0.1.</span> <span class="nav-text">WebSocket</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#WebSocket出现的目的：即时通讯，替代HTTP轮询"><span class="nav-number">1.0.2.</span> <span class="nav-text">WebSocket出现的目的：即时通讯，替代HTTP轮询</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Socket"><span class="nav-number">1.0.3.</span> <span class="nav-text">Socket</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-WebSocket-和-HTTP-有什么关系？"><span class="nav-number">2.</span> <span class="nav-text">2. WebSocket 和 HTTP 有什么关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-WebSocket-和-HTML5-是什么关系？"><span class="nav-number">3.</span> <span class="nav-text">3. WebSocket 和 HTML5 是什么关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-什么是-长连接-短连接、长轮询-短轮询"><span class="nav-number">4.</span> <span class="nav-text">4. 什么是 长连接/短连接、长轮询/短轮询?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-WebSocket在哪些场景下使用？"><span class="nav-number">5.</span> <span class="nav-text">5. WebSocket在哪些场景下使用？</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yang Jie</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://.disqus.com/count.js" async></script>
+  
+
+  
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'https://yangjie2.github.io/2018/08/09/有关即时通讯的基本概念/';
+        this.page.identifier = '2018/08/09/有关即时通讯的基本概念/';
+        this.page.title = '有关即时通讯的基本概念';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        loadComments();
+      
+    </script>
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
