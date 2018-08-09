@@ -110,13 +110,13 @@
 <meta property="og:site_name">
 <meta property="og:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/2018-08-07-使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png">
-<meta property="og:updated_time" content="2018-08-09T02:09:04.771Z">
+<meta property="og:updated_time" content="2018-08-09T02:17:06.053Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景">
 <meta name="twitter:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
-<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/2018-08-07-使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 
 
 
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-08-09 10:09:04" itemprop="dateModified" datetime="2018-08-09T10:09:04+08:00">2018-08-09</time>
+                <time title="Modified: 2018-08-09 10:17:06" itemprop="dateModified" datetime="2018-08-09T10:17:06+08:00">2018-08-09</time>
               
             
           </span>
@@ -537,7 +537,8 @@
 </tr>
 </tbody>
 </table>
-<img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="动态库和静态库加载方式">
+<p><img src="2018-08-07-使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" alt="动态库和静态库加载方式"></p>
+<a href="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="动态库和静态库加载方式">动态库和静态库加载方式</a>
 <p><strong>MacOS/iOS 里的 Framework</strong></p>
 <p>除了上面提到的 .a 和 .dylib/.tbd 之外，Mac OS/iOS 平台还可以使用 Framework。Framework 是一种特殊的文件夹，将库的二进制文件，头文件和有关的资源文件打包到一起，方便管理和分发。</p>
 <p>系统的 framework 是存在于系统内部，而不会打包进 app 中。app 的启动的时候会检查所需要的动态框架是否已经加载。像 UIKit 之类的常用系统框架一般已经在内存中，就不需要再次加载，这可以保证 app 启动速度。相比静态库，framework 是自包含的，你不需要关心头文件位置等，使用起来很方便。</p>
