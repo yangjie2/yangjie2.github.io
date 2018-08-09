@@ -112,7 +112,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png">
-<meta property="og:updated_time" content="2018-08-08T10:44:20.266Z">
+<meta property="og:updated_time" content="2018-08-09T02:09:04.771Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景">
 <meta name="twitter:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-08-08 18:44:20" itemprop="dateModified" datetime="2018-08-08T18:44:20+08:00">2018-08-08</time>
+                <time title="Modified: 2018-08-09 10:09:04" itemprop="dateModified" datetime="2018-08-09T10:09:04+08:00">2018-08-09</time>
               
             
           </span>
@@ -537,7 +537,7 @@
 </tr>
 </tbody>
 </table>
-<img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="[动态库和静态库加载方式]">
+<img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="动态库和静态库加载方式">
 <p><strong>MacOS/iOS 里的 Framework</strong></p>
 <p>除了上面提到的 .a 和 .dylib/.tbd 之外，Mac OS/iOS 平台还可以使用 Framework。Framework 是一种特殊的文件夹，将库的二进制文件，头文件和有关的资源文件打包到一起，方便管理和分发。</p>
 <p>系统的 framework 是存在于系统内部，而不会打包进 app 中。app 的启动的时候会检查所需要的动态框架是否已经加载。像 UIKit 之类的常用系统框架一般已经在内存中，就不需要再次加载，这可以保证 app 启动速度。相比静态库，framework 是自包含的，你不需要关心头文件位置等，使用起来很方便。</p>
@@ -593,7 +593,7 @@
 <blockquote>
 <p>cocoapods-packager allows you to generate a framework or static library from a podspec.</p>
 </blockquote>
-<p>执行一下命令，开始打包静态库</p>
+<p>执行以下命令，开始打包静态库</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pod package YJDemoSDK.podspec --library --force --no-mangle --spec-sources=http://git.guahao-inc.com/yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git</span><br><span class="line"># --library 表示打包成.a文件。--force 表示强制覆盖之前存在的文件</span><br><span class="line"></span><br><span class="line">pod package YJDemoSDK.podspec --force --no-mangle --spec-sources=http://git.guahao-inc.com/yangjie2/snowRepo.git,https://github.com/CocoaPods/Specs.git</span><br><span class="line"># 没有--library，则打包成.framework文件</span><br></pre></td></tr></table></figure>
 <p>–no-mangle，表示Do not mangle symbols of depedendant Pods，当你的项目依赖包含静态库时，不加上这句，就会打包失败：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[!] podspec has binary-only depedencies,mangling not possible.</span><br></pre></td></tr></table></figure></p>
 <p>打包完成，生成的静态库放在 pod 库路径下 PODNAME-0.1.0 文件夹中。若是 .a 类型的静态库，是没有头文件的，需要手动将头文件拷贝过来才能正常使用。而 framework 则可以直接放在项目中使用。</p>
@@ -603,7 +603,7 @@
 <p>在编译选项 Other Linker Flags 中添加 -all_load，用于会告诉编译器 对于所有静态库中的所有对象文件，不管里面的符号有没有被用到，全部都载入，这种方法可以解决问题，但是会产生比较大的二进制文件。<br>在编译选项 Other Linker Flags 中添加 -force_load 并指定路径：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-force_load $(BUILT_PRODUCTS_DIR)/&lt;library_name.a&gt;`</span><br></pre></td></tr></table></figure></p>
 <p>这种方法和 -all_load 类似，不同的是它只载入指定的静态库。</p>
 <p>在编译选项 <code>Other Linker Flags</code> 中添加 <code>-ObjC</code>，这个标识告诉编译器 如果在静态库的对象文件中发现了 Objective-C 代码，就把它载入，Category 中肯定会存在 Objective-C 代码。该方法与前两张类似，只是将加载的范围减少了。<br>另一种解决方法是新版本 Xcode 里 build setting 中的 Perform Single-Object PreLink，如果启用这个选项，所有的对象文件都会被合并成一个单文件（这不是真正的链接，所以叫做预链接），这个对象文件（有时被称做主对象文件 master object file）被添加到静态库中。现在如果主对象文件中的任何符号被认为是在使用，整个主对象文件都会被认为在使用，这样它里面的 Objective-C 部分就会被载入了，当然也包括 Category 对应的对象文件。<br>最后一种解决方法是在 Category 的源文件里添加 Fake symbol，并确保以某种方法在编译时引用了该 Fake symbol，这会使得 Fake symbol 对象文件被加载时它里面 Category 代码也会被载入。该方法可以控制哪些 Category 可以被正常加载，同时也不需要添加编译参数做特殊处理。<br>建议使用第五种方法解决问题，因为前 4 种都会增加二进制文件的体积，在第三方集成你的 SDK 时需要手动设置编译参数，会给第三方带来不好的使用体验。为了使用方便可定义一下宏：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#define FIX_CATEGORY_BUG_H(name) \</span><br><span class="line">@interface FIX_CATEGORY_BUG_##name : NSObject \</span><br><span class="line">+(void)print; \</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#define FIX_CATEGORY_BUG_M(name) \</span><br><span class="line">@implementation FIX_CATEGORY_BUG_##name \</span><br><span class="line">+ (void)print &#123;&#125; \</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">#define ENABLE_CATEGORY(name) [FIX_CATEGORY_BUG_##name print]</span><br></pre></td></tr></table></figure></p>
-<p>在 Category 的头文件中使用 <code>FIX_CATEGORY_BUG_H()</code> 宏来声明一个 Fake symbol ，在 Category 的实现文件中使用 <code>FIX_CATEGORY_BUG_M()</code> 宏来实现该 Fake symbol。最后在找一处运行 ENABLE_CATEGORY() 宏，可以是初始化方法中，也可以是其他任何地方，只要确保它能被正常调用，目的在于该 Fake symbol 确保编译器能正常加载它。</p>
+<p>在 Category 的头文件中使用 <code>FIX_CATEGORY_BUG_H()</code> 宏来声明一个 Fake symbol ，在 Category 的实现文件中使用 <code>FIX_CATEGORY_BUG_M()</code> 宏来实现该 Fake symbol。最后在找一处运行 <code>ENABLE_CATEGORY()</code> 宏，可以是初始化方法中，也可以是其他任何地方，只要确保它能被正常调用，目的在于该 Fake symbol 确保编译器能正常加载它。</p>
 <p>在 64 位的 Mac 系统或者 iOS 系统下，链接器有一个 bug，会导致只包含有 Category 的静态库无法使用 -ObjC 标志来加载 Objective-C 对象文件。</p>
 <p>以上就是使用 cocoapods 打包静态库的所有内容了，也许你跟着这个步骤一步步做的时候，会出现意外的错误，不要灰心，用好 google 比什么都重要。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>cocoapods <a href="https://guides.cocoapods.org/" target="_blank" rel="noopener">https://guides.cocoapods.org/</a></p>
