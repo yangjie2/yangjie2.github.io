@@ -1644,7 +1644,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-07-10 12:05:20" itemprop="dateModified" datetime="2018-07-10T12:05:20+08:00">2018-07-10</time>
+                <time title="Modified: 2018-08-14 20:48:22" itemprop="dateModified" datetime="2018-08-14T20:48:22+08:00">2018-08-14</time>
               
             
           </span>
@@ -1708,7 +1708,7 @@
 
       
         
-          <p>并发编程是一个很有挑战的任务，它有许多错综复杂的问题和陷阱。在iOS开发中，当使用类似 Grand Central Dispatch（GCD）或 NSOperationQueue 的 API 时，很容易遗忘这些问题和陷阱。本文参考 <a href="https://www.objc.io/" target="_blank" rel="noopener">objc.io</a> 上iOS多线程的一篇文章：<a href="https://objccn.io/issue-2-4/" target="_blank" rel="noopener">线程安全类的设计</a>，以及 <a href="https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1" target="_blank" rel="noopener">raywenderlich</a> 上的 <a href="https://www.raywenderlich.com/148513/grand-central-dispatch-tutorial-swift-3-part-1" target="_blank" rel="noopener">Grand Central Dispatch In-Depth:Part 1/2</a> , <a href="https://www.raywenderlich.com/148515/grand-central-dispatch-tutorial-swift-3-part-2" target="_blank" rel="noopener">Grand Central Dispatch In-Depth:Part 2/2</a> ，还有这篇 <a href="http://mrpeak.cn/blog/ios-thread-safety/" target="_blank" rel="noopener">iOS多线程到底不安全在哪里</a>。同时c参考了苹果 Guides and Sample Code 中关于<a href="https://developer.apple.com/library/archive/documentation/General/Conceptual/ConcurrencyProgrammingGuide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40008091-CH1-SW1" target="_blank" rel="noopener">并发编程</a>的章节。</p>
+          <p>在iOS开发中，当使用类似 Grand Central Dispatch（GCD）或 NSOperationQueue 的 API 时，很容易遗忘并发编程中隐藏的问题和陷阱，而且这种问题很难被调试。我们能做的就是遵循某些“规则”，理解一段代码到底不安全在哪里，才能在工作中尽可能规避并发编程的陷阱。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2018/07/06/细说iOS并发编程/#more" rel="contents">
