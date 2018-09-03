@@ -112,7 +112,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png">
-<meta property="og:updated_time" content="2018-08-13T02:29:05.120Z">
+<meta property="og:updated_time" content="2018-09-03T08:02:23.960Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景">
 <meta name="twitter:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-08-13 10:29:05" itemprop="dateModified" datetime="2018-08-13T10:29:05+08:00">2018-08-13</time>
+                <time title="Modified: 2018-09-03 16:02:23" itemprop="dateModified" datetime="2018-09-03T16:02:23+08:00">2018-09-03</time>
               
             
           </span>
@@ -606,6 +606,22 @@
 <p>在 Category 的头文件中使用 <code>FIX_CATEGORY_BUG_H()</code> 宏来声明一个 Fake symbol ，在 Category 的实现文件中使用 <code>FIX_CATEGORY_BUG_M()</code> 宏来实现该 Fake symbol。最后在找一处运行 <code>ENABLE_CATEGORY()</code> 宏，可以是初始化方法中，也可以是其他任何地方，只要确保它能被正常调用，目的在于该 Fake symbol 确保编译器能正常加载它。</p>
 <p>在 64 位的 Mac 系统或者 iOS 系统下，链接器有一个 bug，会导致只包含有 Category 的静态库无法使用 -ObjC 标志来加载 Objective-C 对象文件。</p>
 <p>以上就是使用 cocoapods 打包静态库的所有内容了，也许你跟着这个步骤一步步做的时候，会出现意外的错误，不要灰心，用好 google 比什么都重要。</p>
+<h4 id="Mac-下-lipo、ar、nm-命令的使用"><a href="#Mac-下-lipo、ar、nm-命令的使用" class="headerlink" title="Mac 下 lipo、ar、nm 命令的使用"></a>Mac 下 lipo、ar、nm 命令的使用</h4><p><strong>（1） lipo 的使用</strong></p>
+<p>lipo 是创建和操作“通用文件”（多种CPU架构混合的二进制文件）的命令。它仅生成一个输出文件，并且不改变原始输入文件。</p>
+<p>通俗的讲，lipo 的作用是，将多架构类型的文件拆分成单独某个架构类型的文件，或者将多个不同架构类型的文件合成为一个 fat 的通用文件（多架构类型文件）。所以 lipo 进行各种操作的本质是处理 “架构类型”，而不是操作文件内容。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lipo  [-info] [-detailed_info] [-arch arch_type input_file] ...  [ input_file]</span><br><span class="line">       ...  [-arch_blank arch_type] [-create] [-thin arch_type]  [-replace  arch_type</span><br><span class="line">       filename]   ...    [-remove   arch_type]   ...    [-extract   arch_type]   ...</span><br><span class="line">       [-extract_family arch_type] ...  [-verify_arch arch_type ...]   [-output  out-</span><br><span class="line">       put_file] [-segalign arch_type value] ...</span><br></pre></td></tr></table></figure>
+<p>它能做的事情包括：</p>
+<ol>
+<li>列出通用文件所支持的全部架构类型</li>
+<li>从多个/单个输入文件创建一个通用架构的fat文件</li>
+<li>从一个通用fat文件，thin 分离出一个指定架构的文件</li>
+<li>从输入文件抽取、替换、移除某个架构类型，从而创建出一个单独的新的通用输出文件。</li>
+</ol>
+<p>除了 -arch, -arch_blank, -output, 以及 -segalign 这四个 option 可以与其他 option 结合使用以外，剩下的 option 都仅能使用一个。参数 input_file (输入文件) 是必选的，并且仅仅 -create 这个 option 允许有多个输入文件。除了 -info 和 -detailed_info-output 之外，-output 是必选的。 </p>
+<p><strong>OPTIONS:</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">-info   </span><br><span class="line"># lipo File.a -info</span><br><span class="line"></span><br><span class="line">-detailed_info</span><br><span class="line"># lipo File.a -detailed_info</span><br><span class="line"></span><br><span class="line">-output [output_file]</span><br><span class="line"></span><br><span class="line">-create [input_file] [input_file] -output [output_file]</span><br><span class="line"># lipo -create InputFileOne.a InputFileTwo.a -output File.a</span><br><span class="line"># 注: 输入文件不能包含同样的架构类型</span><br><span class="line"></span><br><span class="line">-thin [arch_type] </span><br><span class="line"># lipo InputFile.a -thin armv7 -output File_armv7.a</span><br><span class="line"></span><br><span class="line">-replace [arch_type] [file_name]</span><br><span class="line"></span><br><span class="line">-remove [arch_type]</span><br><span class="line"></span><br><span class="line">-extract [arch_type]</span><br><span class="line"></span><br><span class="line">-extract_family [arch_type]</span><br><span class="line"></span><br><span class="line">-verify_arch [arch_type] [...]</span><br></pre></td></tr></table></figure>
+<p><strong>（2）ar 创建/维护 library 归档</strong></p>
+<p><strong>（3）nm 查看文件符号表</strong></p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a href="https://guides.cocoapods.org/" target="_blank" rel="noopener">cocoapods</a></p>
 <p><a href="http://blog.cocoapods.org/Pod-Authors-Guide-to-CocoaPods-Frameworks/" target="_blank" rel="noopener">Pod Authors Guide to CocoaPods Frameworks</a> </p>
 <p><a href="http://blog.cocoapods.org/CocoaPods-1.5.0/" target="_blank" rel="noopener">CocoaPods 1.5.0 — Swift Static Libraries</a></p>
@@ -866,7 +882,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础理论"><span class="nav-number">1.</span> <span class="nav-text">基础理论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#xcode中的-workspace-project-target-scheme概念"><span class="nav-number">1.0.1.</span> <span class="nav-text">xcode中的 workspace, project, target, scheme概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库和动态库"><span class="nav-number">1.0.2.</span> <span class="nav-text">静态库和动态库</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#打包静态库"><span class="nav-number">2.</span> <span class="nav-text">打包静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建一个-pod"><span class="nav-number">2.0.1.</span> <span class="nav-text">创建一个 pod</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包静态库-1"><span class="nav-number">2.0.2.</span> <span class="nav-text">打包静态库</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础理论"><span class="nav-number">1.</span> <span class="nav-text">基础理论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#xcode中的-workspace-project-target-scheme概念"><span class="nav-number">1.0.1.</span> <span class="nav-text">xcode中的 workspace, project, target, scheme概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库和动态库"><span class="nav-number">1.0.2.</span> <span class="nav-text">静态库和动态库</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#打包静态库"><span class="nav-number">2.</span> <span class="nav-text">打包静态库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建一个-pod"><span class="nav-number">2.0.1.</span> <span class="nav-text">创建一个 pod</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包静态库-1"><span class="nav-number">2.0.2.</span> <span class="nav-text">打包静态库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Mac-下-lipo、ar、nm-命令的使用"><span class="nav-number">2.0.3.</span> <span class="nav-text">Mac 下 lipo、ar、nm 命令的使用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
