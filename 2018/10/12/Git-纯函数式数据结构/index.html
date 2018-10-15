@@ -111,7 +111,13 @@
 <meta property="og:description" content="看到一篇有趣的文章《Git is a purely functional data structure》，作者：Philip Nilsson。它从函数式数据结构的角度讲解了Git的原理，把 Git 的 commit，branch 等操作和数据的不变性做了类比。本文将这篇文章搬过来，做个记录。">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image1.png">
-<meta property="og:updated_time" content="2018-10-15T04:34:38.504Z">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image2.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image3.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image4.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image5.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image6.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/12/Git-纯函数式数据结构/image7.png">
+<meta property="og:updated_time" content="2018-10-15T04:37:47.277Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Git:纯函数式数据结构">
 <meta name="twitter:description" content="看到一篇有趣的文章《Git is a purely functional data structure》，作者：Philip Nilsson。它从函数式数据结构的角度讲解了Git的原理，把 Git 的 commit，branch 等操作和数据的不变性做了类比。本文将这篇文章搬过来，做个记录。">
@@ -366,7 +372,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-10-15 12:34:38" itemprop="dateModified" datetime="2018-10-15T12:34:38+08:00">2018-10-15</time>
+                <time title="Modified: 2018-10-15 12:37:47" itemprop="dateModified" datetime="2018-10-15T12:37:47+08:00">2018-10-15</time>
               
             
           </span>
@@ -436,9 +442,9 @@
 <p>那这种“不变性”有什么好处呢？很重要的一点就是线程安全，一个线程对数据的修改不会影响到另外一个线程，这样就不需要加锁的操作了。但是每次添加/删除一个元素就要创建一个新的列表出来，这样做是很低效和浪费内存的。那就做点优化，对原列表进行复用，比如：</p>
 <img src="/2018/10/12/Git-纯函数式数据结构/image1.png">
 <p>老的列表和新的列表复用了内存中的元素，但是从外界的使用者看来，这是两个不同的列表。此时，如果线程再次在老列表 [3,2,1] 之前插入新的元素 9 ，怎么处理？ 同样，还是可以复用：</p>
-
+<img src="/2018/10/12/Git-纯函数式数据结构/image2.png">
 <p>如果我想把 new list 1 中的元素 3 更新成元素 5， 这就有点难办了，因为它会影响到两个新的列表，new list 1 和 new list 2。  没办法，只有把元素 copy 一下了：</p>
-
+<img src="/2018/10/12/Git-纯函数式数据结构/image3.png">
 <p>经过以上若干次操作，形成了四个列表：</p>
 <ul>
 <li>老的列表： [3,2,1]</li>
@@ -461,15 +467,15 @@
 <p>两者是不是很像？所以可以确切的说，Git 是一个纯函数式的数据结构，允许你在命令行使用命令进行各种”不变性”操作。</p>
 <p>为了更好的进行类比，需要将上面例子中的数字换成 commit。Git 中的一个 commit 是对某个历史时间点完整的工作状态的一次拷贝；是你当前工作路径的一个完整“快照”。</p>
 <p>比如一个仓库的 <code>master</code> 分支按时间先后顺序有 A、B、C 三次 commit，所以 Git 对我们工作路径下的全部状态进行存储了三次。看下图：</p>
-
+<img src="/2018/10/12/Git-纯函数式数据结构/image4.png">
 <h4 id="Git-commit"><a href="#Git-commit" class="headerlink" title="Git commit"></a>Git commit</h4><p>如果我们再执行一次 commit，就变成下图这样：</p>
-
+<img src="/2018/10/12/Git-纯函数式数据结构/image5.png">
 <p>Git 将<code>master</code>指针指向 [D,C,B,A]，老的 history 指针（即 master^）还在，仍然指向 [C,B,A]。我的这次提交不会影响其他人，因为老的 mater^ 依然不变。</p>
 <h4 id="Git-amend"><a href="#Git-amend" class="headerlink" title="Git amend"></a>Git amend</h4><p>如果你用过Git的话，你也许知道可以使用 commit –amend 来更新最近一次的 Commit (图 D), 但是你真的把那个 Commit (图 D) 给更新了吗？ 实际上并没有，Git只是创建了一个新的 Commit（下图中的E），并且让 master 指针指向 E 而已。 通过git reflog 命令，你依然能看到修改前的那个 Commit （图 D）（假设它的hash value 是 33b90b7）。</p>
-
+<img src="/2018/10/12/Git-纯函数式数据结构/image6.png">
 <h4 id="Git-branch"><a href="#Git-branch" class="headerlink" title="Git branch"></a>Git branch</h4><p>正如你在上面看到的，每次你使用 commit –amend ， 你实际上创建了一个新的分支！分支实际上就是给一个我们想引用的 commit 起了个名字而已。我们甚至可以使用那个“被替换掉的”，“废弃的” Commit (33b90b7)来创建一个分支，比如起个名字叫 “dev”：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b mybranch 33b90b7</span><br></pre></td></tr></table></figure>
-
+<img src="/2018/10/12/Git-纯函数式数据结构/image7.png">
 <p>所以，只要你理解了Git 是函数式数据结构的本质，你就可以从任何 commit 上来创建分支了。原文还讲了Rebase/Merge和不变性的比较，我觉得就不是很贴切了，这里不再展开，感兴趣的同学可以看下<a href="https://blog.jayway.com/2013/03/03/git-is-a-purely-functional-data-structure/" target="_blank" rel="noopener">原文</a>。</p>
 <p>与其把Git描述成一个版本控制系统，不如说版本控制是“不变性”数据结构的一个自然属性。如果以这种方式来思考的话，Git在概念上比SVN, CVS等要简单。 大家认为Git更加复杂可能是因为这种复杂性能支持更有趣的workflow。</p>
 
