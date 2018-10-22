@@ -110,10 +110,13 @@
 <meta property="og:site_name">
 <meta property="og:description" content="我们知道，Objective-C 是一门面向对象的动态语言，是C语言的超集。而 OC 之所以具有这些特性，本质上在于 Runtime 库。Runtime 由C语言和汇编语言编写，是 OC 语言的“基石”，它定义了 OC 语言的基础数据结构；类与对象的相关操作函数；方法调用、消息机制；Protocol 和 Category 等。理解 Objective-C 的 Runtime 可以帮我们更好的了解这">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C：方法调用/class_meta.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C：方法调用/messageForword.png">
 <meta property="og:updated_time" content="2018-10-22T09:56:16.649Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解Objective-C：方法调用">
 <meta name="twitter:description" content="我们知道，Objective-C 是一门面向对象的动态语言，是C语言的超集。而 OC 之所以具有这些特性，本质上在于 Runtime 库。Runtime 由C语言和汇编语言编写，是 OC 语言的“基石”，它定义了 OC 语言的基础数据结构；类与对象的相关操作函数；方法调用、消息机制；Protocol 和 Category 等。理解 Objective-C 的 Runtime 可以帮我们更好的了解这">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C：方法调用/class_meta.png">
 
 
 
@@ -435,7 +438,7 @@
 <p>Class 被定义为一个指向 objc_class 的结构体指针。objc_class 在 objc/objc_class.h 中定义如下:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    const char *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list *ivars                             OBJC2_UNAVAILABLE; </span><br><span class="line">    struct objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br><span class="line">/* Use `Class` instead of `struct objc_class *` */</span><br></pre></td></tr></table></figure>
 <p>我们发现，Class 本身也有一个 isa 指针，指向的是它的 MetaClass。下面这张图说明了 OC 对象体系 isa 以及 super_class 指针的指向：</p>
-
+<img src="/2018/10/15/深入理解Objective-C：方法调用/class_meta.png">
 <p><strong>2. SEL</strong></p>
 <p>SEL 的定义如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_selector    *SEL;</span><br></pre></td></tr></table></figure>
@@ -511,7 +514,7 @@
 <p>被转发的消息的返回值，会被返回得到原始消息接收者，也就是 forwardInvocation: 消息的原始发送者，所有类型的返回值都支持，比如id类型，结构体，double等。</p>
 <p>NSObject 类对 forwardInvocation： 方法的实现是：简单的调用 <code>doesNotRecognizeSelector:</code>  方法，它不转发任何消息。因此，如果你没有实现 forwardInvocation：，并且给对象发送了一个不能识别的消息，就会发生异常。</p>
 <p>动态方法决议和消息转发流程可总结为下面这张图：</p>
-
+<img src="/2018/10/15/深入理解Objective-C：方法调用/messageForword.png">
 
       
     </div>
