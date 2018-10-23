@@ -112,7 +112,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C方法调用/class_meta.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C方法调用/messageForword.png">
-<meta property="og:updated_time" content="2018-10-22T09:56:16.649Z">
+<meta property="og:updated_time" content="2018-10-23T01:12:33.287Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解Objective-C：方法调用">
 <meta name="twitter:description" content="我们知道，Objective-C 是一门面向对象的动态语言，是C语言的超集。而 OC 之所以具有这些特性，本质上在于 Runtime 库。Runtime 由C语言和汇编语言编写，是 OC 语言的“基石”，它定义了 OC 语言的基础数据结构；类与对象的相关操作函数；方法调用、消息机制；Protocol 和 Category 等。理解 Objective-C 的 Runtime 可以帮我们更好的了解这">
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-10-22 17:56:16" itemprop="dateModified" datetime="2018-10-22T17:56:16+08:00">2018-10-22</time>
+                <time title="Modified: 2018-10-23 09:12:33" itemprop="dateModified" datetime="2018-10-23T09:12:33+08:00">2018-10-23</time>
               
             
           </span>
@@ -484,7 +484,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL) resolveInstanceMethod:(SEL)aSEL</span><br><span class="line">&#123;</span><br><span class="line">    if (aSEL == @selector(resolveThisMethodDynamically))</span><br><span class="line">    &#123;</span><br><span class="line">          class_addMethod([self class], aSEL, (IMP) dynamicMethodIMP, &quot;v@:@&quot;);</span><br><span class="line">          return YES;</span><br><span class="line">    &#125;</span><br><span class="line">    return [super resolveInstanceMethod:aSel];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>其中 class_addMethod 的函数原型如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BOOL class_addMethod(Class cls, SEL name, IMP imp, const char *types);</span><br></pre></td></tr></table></figure></p>
 <p>刚开始让我不太明白的是最后一个参数 types ，查阅资料后得知其是一个定义该函数返回值类型和参数类型的字符串。本例中 types 为 <code>&quot;v@:@&quot;</code>，按照顺序表示如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">v    :   返回值为 void</span><br><span class="line">@    ：  参数id(self)</span><br><span class="line">:    :   SEL(_cmd)对象</span><br><span class="line">@    ：  参数id(str)</span><br></pre></td></tr></table></figure></p>
-<p>也就是说，types 描述了一个函数的返回值类型以及参数类型。<code>:</code> 表示 SEL 类型，<code>@</code> 表示 OC 对象类型。其他类型见下表：<br>| 符号 | 意义 |<br>| —— | —— |<br>| c | char 类型|<br>| i | int 类型|<br>| s | short 类型|<br>| l | long 类型|<br>| q | long long 类型|<br>| C | unsigned char 类型|<br>| I | unsigned int 类型|<br>| S | unsigned short 类型|<br>| L | unsigned long 类型|<br>| Q | unsigned long long 类型|<br>| f | float 类型|<br>| d | double 类型|<br>| B | C++ bool or C99 _Bool 类型|<br>| v | void 类型|<br>| <em> | character string （char </em>） 类型|</p>
+<p>也就是说，types 描述了一个函数的返回值类型以及参数类型。<code>:</code> 表示 SEL 类型，<code>@</code> 表示 OC 对象类型。其他类型见下表：<br>| 符号 | 意义 |<br>| :——: | :—— |<br>| c | char 类型 |<br>| i | int 类型 |<br>| s | short 类型 |<br>| l | long 类型 |<br>| q | long long 类型 |<br>| C | unsigned char 类型 |<br>| I | unsigned int 类型 |<br>| S | unsigned short 类型 |<br>| L | unsigned long 类型 |<br>| Q | unsigned long long 类型 |<br>| f | float 类型 |<br>| d | double 类型 |<br>| B | C++ bool or C99 _Bool 类型 |<br>| v | void 类型 |<br>| <code>*</code> | character string （char *） 类型 |</p>
 <p></p>
 <blockquote>
 <p>特别注意：<br><code>resolveInstanceMethod:</code> and <code>resolveClassMethod:</code> is called before the Objective-C forwarding mechanism is invoked. If respondsToSelector: or instancesRespondToSelector: is invoked, the dynamic method resolver is given the opportunity to provide an IMP for the given selector first.</p>
