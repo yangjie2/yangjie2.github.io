@@ -112,7 +112,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C：方法调用/class_meta.png">
 <meta property="og:image" content="https://yangjie2.github.io/2018/10/15/深入理解Objective-C：方法调用/messageForword.png">
-<meta property="og:updated_time" content="2018-10-23T01:21:56.653Z">
+<meta property="og:updated_time" content="2018-10-24T11:12:32.418Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入理解Objective-C：方法调用">
 <meta name="twitter:description" content="我们知道，Objective-C 是一门面向对象的动态语言，是C语言的超集。而 OC 之所以具有这些特性，本质上在于 Runtime 库。Runtime 由C语言和汇编语言编写，是 OC 语言的“基石”，它定义了 OC 语言的基础数据结构；类与对象的相关操作函数；方法调用、消息机制；Protocol 和 Category 等。理解 Objective-C 的 Runtime 可以帮我们更好的了解这">
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-10-23 09:21:56" itemprop="dateModified" datetime="2018-10-23T09:21:56+08:00">2018-10-23</time>
+                <time title="Modified: 2018-10-24 19:12:32" itemprop="dateModified" datetime="2018-10-24T19:12:32+08:00">2018-10-24</time>
               
             
           </span>
@@ -434,22 +434,18 @@
 <a id="more"></a>
 <p>先看下与 runtime 密切相关的几个数据类型: <code>Class</code>, <code>SEL</code>, <code>IMP</code>, <code>Method</code>，他们都定义在 objc/objc.h 文件中。</p>
 <h3 id="Class-Method-SEL-IMP"><a href="#Class-Method-SEL-IMP" class="headerlink" title="Class, Method, SEL, IMP"></a>Class, Method, SEL, IMP</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">/// An opaque type that represents an Objective-C class.</span><br><span class="line">typedef struct objc_class *Class;</span><br><span class="line"></span><br><span class="line">/// A pointer to an instance of a class.</span><br><span class="line">typedef struct objc_object *id;</span><br><span class="line"></span><br><span class="line">typedef struct objc_object &#123;  </span><br><span class="line">    Class isa;  </span><br><span class="line">&#125; *id;</span><br><span class="line">/*可以看到,iOS 中的 id 类型实际上就是指向 objc_object 结构体的指针，</span><br><span class="line">  objc_object 持有一个 Class 类型的 isa 变量。 </span><br><span class="line"></span><br><span class="line">  NSObject 的定义</span><br><span class="line"></span><br><span class="line">    @interface NSObject &lt;NSObject&gt; &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line">  NSObject 同样也持有一个 Class 类型的 isa 变量，但是额外遵循 NSObject 协议。</span><br><span class="line">  因此 id 可以泛指所有 NSObject 以及继承自 NSObject 的对象，</span><br><span class="line">  但是 NSObject * 指针却不能指向 id 类型。</span><br><span class="line">*/</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">typedef struct objc_selector     *SEL;  </span><br><span class="line"></span><br><span class="line">#if !OBJC_OLD_DISPATCH_PROTOTYPES  </span><br><span class="line">typedef void (*IMP)(void /* id, SEL, ... */ );  </span><br><span class="line">#else  </span><br><span class="line">typedef id (*IMP)(id, SEL, ...);  </span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-<p><strong>1. Class</strong></p>
-<p>Class 被定义为一个指向 objc_class 的结构体指针。objc_class 在 objc/objc_class.h 中定义如下:</p>
+<h5 id="1-Class"><a href="#1-Class" class="headerlink" title="1. Class"></a>1. Class</h5><p>Class 被定义为一个指向 objc_class 的结构体指针。objc_class 在 objc/objc_class.h 中定义如下:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">struct objc_class &#123;</span><br><span class="line">    Class isa  OBJC_ISA_AVAILABILITY;</span><br><span class="line"></span><br><span class="line">#if !__OBJC2__</span><br><span class="line">    Class super_class                                        OBJC2_UNAVAILABLE;</span><br><span class="line">    const char *name                                         OBJC2_UNAVAILABLE;</span><br><span class="line">    long version                                             OBJC2_UNAVAILABLE;</span><br><span class="line">    long info                                                OBJC2_UNAVAILABLE;</span><br><span class="line">    long instance_size                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_ivar_list *ivars                             OBJC2_UNAVAILABLE; </span><br><span class="line">    struct objc_method_list **methodLists                    OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_cache *cache                                 OBJC2_UNAVAILABLE;</span><br><span class="line">    struct objc_protocol_list *protocols                     OBJC2_UNAVAILABLE;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">&#125; OBJC2_UNAVAILABLE;</span><br><span class="line">/* Use `Class` instead of `struct objc_class *` */</span><br></pre></td></tr></table></figure>
 <p>我们发现，Class 本身也有一个 isa 指针，指向的是它的 MetaClass。下面这张图说明了 OC 对象体系 isa 以及 super_class 指针的指向：</p>
 <img src="/2018/10/15/深入理解Objective-C：方法调用/class_meta.png">
-<p><strong>2. SEL</strong></p>
-<p>SEL 的定义如下：</p>
+<h5 id="2-SEL"><a href="#2-SEL" class="headerlink" title="2. SEL"></a>2. SEL</h5><p>SEL 的定义如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_selector    *SEL;</span><br></pre></td></tr></table></figure>
 <p>在源码中没有直接找到 objc_selector 的定义，从一些书籍上与 Blog 上看到可以将 SEL 理解为一个 char* 指针：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct objc_selector &#123;</span><br><span class="line">    char *name;                       OBJC2_UNAVAILABLE;</span><br><span class="line">    char *types;                      OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p><strong>3. IMP</strong></p>
-<p>IMP 定义如下：</p>
+<h5 id="3-IMP"><a href="#3-IMP" class="headerlink" title="3. IMP"></a>3. IMP</h5><p>IMP 定义如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef id (*IMP)(id, SEL, ...);</span><br></pre></td></tr></table></figure>
 <p>IMP 可以理解为函数指针，指向了函数的实现代码。这个被指向的函数的参数包含一个接收消息的 id 对象、 SEL、以及不定个数的参数，并返回一个 id 类型的对象，我们可以像在Ｃ语言里面一样使用这个函数指针。</p>
 <p>SEL 与 IMP 的关系非常类似于 HashTable 中 key 与 value 的关系。OC 中不支持函数重载的原因就是因为一个类的方法列表中不能存在两个相同的 SEL 。但是不同的类中可以拥有相同的 SEL，不同类的实例对象执行相同的 SEL 时，会在各自的方法列表中去根据 SEL 去寻找自己对应的IMP。这使得OC可以支持函数重写。</p>
-<p><strong>4. Method</strong></p>
-<p>Method 的定义如下：</p>
+<h5 id="4-Method"><a href="#4-Method" class="headerlink" title="4. Method"></a>4. Method</h5><p>Method 的定义如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/// An opaque type that represents a method in a class definition.</span><br><span class="line">typedef struct objc_method *Method;</span><br><span class="line"></span><br><span class="line">struct objc_method &#123;</span><br><span class="line">    SEL method_name                                          OBJC2_UNAVAILABLE;</span><br><span class="line">    char *method_types                                       OBJC2_UNAVAILABLE;</span><br><span class="line">    IMP method_imp                                           OBJC2_UNAVAILABLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Method = SEL + IMP + method_types，相当于在SEL和IMP之间建立了一个映射。</p>
 <h3 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h3><p>我们都知道，在 Objective-C 里调用一个方法是这样的：</p>
@@ -466,7 +462,7 @@
 <li>从对象的方法链表中根据 SEL 去查找 IMP，找到后加入到缓存。查找过程如下：<ul>
 <li>如果支持GC，忽略掉非GC环境的方法（retain等）</li>
 <li>从对象的 Class 的 method_list 寻找 selector，如果找到，填充到缓存中，并返回 selector，否则</li>
-<li>寻找父类的 method_list，并依次往上寻找，直到找到 selector，填充到缓存中，并返回 selector，否则</li>
+<li>从对象的超类的 method_list 寻找，并依次往上寻找，直到找到 selector，填充到缓存中，并返回 selector，否则</li>
 <li>调用 _class_resolveMethod，动态方法决议，若找到 selector 对应的方法实现 IMP，不缓存，方法返回，否则</li>
 <li>转发这个 selector，否则</li>
 </ul>
@@ -474,8 +470,7 @@
 <li>报错，抛出异常</li>
 </ol>
 <p>以上便是方法调用的整个过程，下面重点说下<strong>动态方法决议</strong>以及<strong>消息转发</strong>。</p>
-<p><strong>动态方法决议</strong></p>
-<p>当无法从对象(类对象或实例对象)以及对象父类的 cache 和 method_list 中找到 selector 对应的 IMP 时，就会进入动态方法决议阶段，在这个阶段，如果能够提供 seltctor 的方法实现，并反回YES，则成功处理该消息，本次方法调用结束，不会再进行后续的消息转发。</p>
+<h5 id="动态方法决议"><a href="#动态方法决议" class="headerlink" title="动态方法决议"></a>动态方法决议</h5><p>当无法从对象(类对象或实例对象)以及对象父类的 cache 和 method_list 中找到 selector 对应的 IMP 时，就会进入动态方法决议阶段，在这个阶段，如果能够提供 seltctor 的方法实现，并反回YES，则成功处理该消息，本次方法调用结束，不会再进行后续的消息转发。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">//Dynamically provides an implementation for a given selector for an instance method.</span><br><span class="line">+ (BOOL)resolveInstanceMethod:(SEL)sel;</span><br><span class="line"></span><br><span class="line">or</span><br><span class="line"></span><br><span class="line">//Dynamically provides an implementation for a given selector for a class method.</span><br><span class="line">+ (BOOL)resolveClassMethod:(SEL)sel;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">return value：</span><br><span class="line">YES if the method was found and added to the receiver, otherwise NO.</span><br><span class="line"></span><br><span class="line">返回 YES 表示不进行后续的消息转发，返回 NO 则表示要进行后续的消息转发。</span><br><span class="line"></span><br><span class="line">如果在该函数内为指定的 selector  提供实现，无论返回 YES 还是 NO，编译运行都是正确的；</span><br><span class="line">但如果在该函数内并不真正为 selector 提供实现，无论返回 YES 还是 NO，运行都会 crash</span><br></pre></td></tr></table></figure>
 <p><code>resolveInstanceMethod:</code> 以及 <code>resolveClassMethod:</code>允许你动态提供给定 selector 的 IMP 实现。</p>
 <p>简单的说，Objective-C 方法(method)就是至少带有两个参数：<code>self</code>、<code>_cmd</code> 的 C 函数。使用 <code>class_addMethod</code> 函数可以将 C 函数添加到某个类中作为该类的一个方法。</p>
@@ -559,8 +554,7 @@
 <blockquote>
 <p>特别注意：<br><code>resolveInstanceMethod:</code> and <code>resolveClassMethod:</code> is called before the Objective-C forwarding mechanism is invoked. If respondsToSelector: or instancesRespondToSelector: is invoked, the dynamic method resolver is given the opportunity to provide an IMP for the given selector first.</p>
 </blockquote>
-<p><strong>消息转发</strong></p>
-<p>如果动态方法决议不能处理当前消息（返回 NO），那么就会走到消息转发阶段。</p>
+<h5 id="消息转发"><a href="#消息转发" class="headerlink" title="消息转发"></a>消息转发</h5><p>如果动态方法决议不能处理当前消息（返回 NO），那么就会走到消息转发阶段。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//Returns the object to which unrecognized messages should first be directed.</span><br><span class="line">- (id)forwardingTargetForSelector:(SEL)aSelector;</span><br><span class="line"></span><br><span class="line">Parameters：</span><br><span class="line">aSelector</span><br><span class="line">A Selector for a method that the receiver does not implement.</span><br><span class="line"></span><br><span class="line">Return Value：</span><br><span class="line">The object to which unrecognized messages should first be directed.</span><br></pre></td></tr></table></figure>
 <p>如果你在一个类实现了该方法，并返回一个非空对象（非 self），那么返回的对象作为新的消息接收对象，这条消息会重新发送给该对象。很显然，如果你在上述方法中返回 self ，代码会进入死循环。</p>
 <p>如果你在一个类（非基类）中实现了该方法，并且对于给定的 selector 没有给出返回对象，那么你应该返回超类的方法调用结果:<code>return [super forwardingTargetForSelector:aSelector]</code>。</p>
@@ -585,6 +579,23 @@
 <p>NSObject 类对 forwardInvocation： 方法的实现是：简单的调用 <code>doesNotRecognizeSelector:</code>  方法，它不转发任何消息。因此，如果你没有实现 forwardInvocation：，并且给对象发送了一个不能识别的消息，就会发生异常。</p>
 <p>动态方法决议和消息转发流程可总结为下面这张图：</p>
 <img src="/2018/10/15/深入理解Objective-C：方法调用/messageForword.png">
+<h5 id="self-与-super-的含义"><a href="#self-与-super-的含义" class="headerlink" title="self 与 super 的含义"></a>self 与 super 的含义</h5><p>在进行方法调用时，我们通常这样写（假设当前类和其超类都有 <code>method</code> 实例方法）:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[self method]</span><br><span class="line"></span><br><span class="line">or</span><br><span class="line"></span><br><span class="line">[super method]</span><br></pre></td></tr></table></figure>
+<p>按照我最初模糊的理解，self 代表当前接收这个消息的对象，super 代表超类。但是仔细想下，这样理解是有问题的，如果 super 代表超类，那 <code>super method</code> 就表示调用了超类的类方法 <code>method</code>，但是这个方法明明是实例方法呀。而且 super 更不可能代表超类的实例对象，因为你都没创建。带着疑惑，我决定仔细研究下。</p>
+<p>根据官方文档的解释：</p>
+<blockquote>
+<p><code>self</code> 代表当前接收这个消息的对象</p>
+<p>向 <code>super</code> 发送一个消息，表示去当前对象的超类中调用某个方法。</p>
+</blockquote>
+<p>所以说，self 代表的是一个真实的对象；super 仅表示“去当前对象的超类中调用某个方法”，它是编译器的一个符号，不是对象。</p>
+<p>理解了他们的含义，那么在向 self 和 super 发送消息时，在 runtime 层是怎样区别的？</p>
+<p>向 self 发送消息，runtime 会调用下面这个函数:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id objc_msgSend(id self, SEL op, ...);</span><br></pre></td></tr></table></figure></p>
+<p>向 super 发送消息时，runtime 会调用下面的函数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id objc_msgSendSuper(struct objc_super *super, SEL op, ...);</span><br></pre></td></tr></table></figure></p>
+<p>结构体 objc_super 的定义如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct objc_super &#123;</span><br><span class="line">id receiver;</span><br><span class="line">Class superClass;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>所以，向 super 发送消息时，消息的接收者，依然是当前对象 self。只不过是从超类的 method_list 中查找方法实现。</p>
+<p>到这里，应该就理解下面这个问题的答案了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@implementation Dog : Animal</span><br><span class="line">- (id)init &#123;</span><br><span class="line">    self = [super init];</span><br><span class="line">    if (self)  &#123;</span><br><span class="line">        NSLog(@&quot;%@&quot;, NSStringFromClass([self class]));</span><br><span class="line">        NSLog(@&quot;%@&quot;, NSStringFromClass([super class]));</span><br><span class="line">    &#125;</span><br><span class="line">    return self;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>会分别打印出来什么？ </p>
+<p>肯定都是打印 Dog 。</p>
 
       
     </div>
@@ -841,7 +852,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Class-Method-SEL-IMP"><span class="nav-number">1.</span> <span class="nav-text">Class, Method, SEL, IMP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法调用"><span class="nav-number">2.</span> <span class="nav-text">方法调用</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Class-Method-SEL-IMP"><span class="nav-number">1.</span> <span class="nav-text">Class, Method, SEL, IMP</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1-Class"><span class="nav-number">1.0.1.</span> <span class="nav-text">1. Class</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-SEL"><span class="nav-number">1.0.2.</span> <span class="nav-text">2. SEL</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-IMP"><span class="nav-number">1.0.3.</span> <span class="nav-text">3. IMP</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-Method"><span class="nav-number">1.0.4.</span> <span class="nav-text">4. Method</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法调用"><span class="nav-number">2.</span> <span class="nav-text">方法调用</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#动态方法决议"><span class="nav-number">2.0.1.</span> <span class="nav-text">动态方法决议</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#消息转发"><span class="nav-number">2.0.2.</span> <span class="nav-text">消息转发</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#self-与-super-的含义"><span class="nav-number">2.0.3.</span> <span class="nav-text">self 与 super 的含义</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
