@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://yangjie2.github.io/"/>
-  <updated>2018-10-24T11:12:32.418Z</updated>
+  <updated>2019-01-31T09:15:07.724Z</updated>
   <id>https://yangjie2.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Objective-C和swift混编</title>
+    <link href="https://yangjie2.github.io/2019/01/31/Objective-C%E5%92%8Cswift%E6%B7%B7%E7%BC%96/"/>
+    <id>https://yangjie2.github.io/2019/01/31/Objective-C和swift混编/</id>
+    <published>2019-01-31T08:20:44.000Z</published>
+    <updated>2019-01-31T09:15:07.724Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近对一个现有项目进行重构，感觉swift出来这么久了，还没用它进行实际项目的编写，所以打算利用这次机会重新熟悉下swift。由于项目依赖的私有库或者开源库大都是由Objective-C写的，当我创建一个swift项目后，首先考虑的是怎么在swfit项目中调用Objective-C接口(项目使用cocoapods管理)。</p><a id="more"></a><p>在swift项目中调用OC接口，只需要创建一个桥接文件，文件名为：ProjiectName-Bridging-Header.h 。有两种方式可以创建该桥接文件：</p><ul><li>在swift项目中，新建一个OC类，此时会自动弹出一个提示框，提示是否创建Objective-C桥接文件，点击创建即可。</li><li>手动创建该桥接文件，创建完之后还需要配置桥接文件路径：TARGETS -&gt; Build Setting -&gt; Swift Compiler-General -&gt; Objective-C Bridging Header，这里设置相对路径就好，比如 <code>ProjiectName/ProjiectName-Bridging-Header.h</code></li></ul><p>创建桥接文件之后，在该文件内import你需要的OC头文件。</p><p>如果发现还是调用不了OC接口，或者识别不了桥接文件中的OC头文件，你还需要进行下面的配置：</p><p>TARGETS-&gt; Build Phases -&gt; Link Binary With Libraries  进入到这里，点击+号，把我们需要的第三方库添加进去；然后到 TARGETS-&gt; Build Setting -&gt; User Header Search Paths， 设置为 <code>recursive</code>。</p><p>这样就OK了。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近对一个现有项目进行重构，感觉swift出来这么久了，还没用它进行实际项目的编写，所以打算利用这次机会重新熟悉下swift。由于项目依赖的私有库或者开源库大都是由Objective-C写的，当我创建一个swift项目后，首先考虑的是怎么在swfit项目中调用Objective-C接口(项目使用cocoapods管理)。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS dev" scheme="https://yangjie2.github.io/categories/iOS-dev/"/>
+    
+    
+      <category term="Objective-C" scheme="https://yangjie2.github.io/tags/Objective-C/"/>
+    
+      <category term="swift" scheme="https://yangjie2.github.io/tags/swift/"/>
+    
+  </entry>
   
   <entry>
     <title>深入理解Objective-C：方法调用</title>
