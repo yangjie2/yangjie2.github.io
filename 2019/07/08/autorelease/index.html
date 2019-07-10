@@ -110,12 +110,10 @@
 <meta property="og:site_name">
 <meta property="og:description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://yangjie2.github.io/2019/07/08/autorelease/2019-07-08-autorelease/NSAutoreleasePool对象生命周期.png">
-<meta property="og:updated_time" content="2019-07-09T03:24:14.942Z">
+<meta property="og:updated_time" content="2019-07-10T09:58:33.767Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objective-C autorelease">
 <meta name="twitter:description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
-<meta name="twitter:image" content="https://yangjie2.github.io/2019/07/08/autorelease/2019-07-08-autorelease/NSAutoreleasePool对象生命周期.png">
 
 
 
@@ -366,7 +364,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-07-09 11:24:14" itemprop="dateModified" datetime="2019-07-09T11:24:14+08:00">2019-07-09</time>
+                <time title="Modified: 2019-07-10 17:58:33" itemprop="dateModified" datetime="2019-07-10T17:58:33+08:00">2019-07-10</time>
               
             
           </span>
@@ -438,7 +436,7 @@
 <li>废弃 NSAutoreleasePool 对象</li>
 </ol>
 <p>NSAutoreleasePool 对象的生命周期相当于C语言变量的作用域。在废弃 NSAutoreleasePool 对象时，所有调用过 autorelease 的实例对象都将调用 release 方法。如下图所示：</p>
-<p><img src="2019-07-08-autorelease/NSAutoreleasePool对象生命周期.png" alt="NSAutoreleasePool对象生命周期"></p>
+
 <p>使用代码表示如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//非ARC下</span><br><span class="line">NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];</span><br><span class="line">id obj = [[NSObject alloc] init];</span><br><span class="line">[obj autorelease];</span><br><span class="line">..</span><br><span class="line">..</span><br><span class="line">[pool drain];</span><br></pre></td></tr></table></figure></p>
 <p>最后一行的 <code>[pool drain]</code>等同于 <code>[obj release]</code>。</p>
 <p>NSAutoreleasePool 是与线程紧密相关的，每个线程都会维护一个自己的 NSAutoreleasePool 栈。在主线程 NSRunLoop 的每个 Loop 开始前，系统会自动创建一个 NSAutoreleasePool 对象 ，并在这个 Loop 结束时 drain 。所以在通常情况下，开发者不需要非得自己使用 NSAutoreleasePool 来进行开发工作。</p>
