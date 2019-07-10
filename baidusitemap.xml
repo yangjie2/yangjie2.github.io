@@ -4,6 +4,28 @@
 
     
   <url>
+    <loc>https://yangjie2.github.io/2019/07/08/autorelease/</loc>
+    <lastmod>2019-07-09T03:24:14.942Z</lastmod>
+    <data>
+        <display>
+        <title>Objective-C autorelease</title>
+        <pubTime>2019-07-08T07:59:43.000Z</pubTime>
+        
+        <tag>Objective-C</tag>
+         
+        <tag>内存管理</tag>
+         
+         
+           
+             
+              <breadCrumb title="iOS dev" url="https://yangjie2.github.io/categories/iOS-dev/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://yangjie2.github.io/2019/01/31/Objective-C%E5%92%8Cswift%E6%B7%B7%E7%BC%96/</loc>
     <lastmod>2019-01-31T09:15:07.724Z</lastmod>
     <data>
