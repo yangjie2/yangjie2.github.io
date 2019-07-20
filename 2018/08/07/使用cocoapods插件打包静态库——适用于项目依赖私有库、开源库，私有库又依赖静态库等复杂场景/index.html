@@ -110,13 +110,13 @@
 <meta property="og:site_name">
 <meta property="og:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
-<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png">
-<meta property="og:updated_time" content="2018-10-10T05:35:54.000Z">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png">
+<meta property="og:updated_time" content="2019-07-20T07:28:26.910Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景">
 <meta name="twitter:description" content="我们小组需要持续向其他公司或部门提供一套IM（即时通讯）SDK，为了隐藏源码实现，就需要将它打包为静态库（.a/.framework）的形式。该项目使用cocoapods管理，依赖许多私有库，并且私有库又依赖私有库、开源库等，这些私有库又会涉及频繁更新，每次打包静态库时都需要保证是最新的代码，并且还要解决各个库的依赖问题。在这种情况下，怎么才能方便快速的打包静态库呢？幸好 cocoapods 已经">
-<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png">
 
 
 
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2018-10-10 13:35:54" itemprop="dateModified" datetime="2018-10-10T13:35:54+08:00">2018-10-10</time>
+                <time title="Modified: 2019-07-20 15:28:26" itemprop="dateModified" datetime="2019-07-20T15:28:26+08:00">2019-07-20</time>
               
             
           </span>
@@ -537,7 +537,7 @@
 </tr>
 </tbody>
 </table>
-<img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" title="动态库和静态库加载方式">
+<p><img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/静态库.png" alt=""></p>
 <p>–<br><strong>MacOS/iOS 里的 Framework</strong></p>
 <p>除了上面提到的 .a 和 .dylib/.tbd 之外，Mac OS/iOS 平台还可以使用 Framework。Framework 是一种特殊的文件夹，将库的二进制文件，头文件和有关的资源文件打包到一起，方便管理和分发。</p>
 <p>系统的 framework 是存在于系统内部，而不会打包进 app 中。app 的启动的时候会检查所需要的动态框架是否已经加载。像 UIKit 之类的常用系统框架一般已经在内存中，就不需要再次加载，这可以保证 app 启动速度。相比静态库，framework 是自包含的，你不需要关心头文件位置等，使用起来很方便。</p>
@@ -561,7 +561,7 @@
 <p>所以我们这里使用 pod lib create [pod name] 去创建一个pod，过程如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">$ pod lib create YJDemoSDK</span><br><span class="line">  Cloning `https://github.com/CocoaPods/pod-template.git` into `YJDemoSDK`.</span><br><span class="line">  Configuring YJDemoSDK template.</span><br><span class="line"></span><br><span class="line">------------------------------</span><br><span class="line"></span><br><span class="line">To get you started we need to ask a few questions, this should only take a minute.</span><br><span class="line"></span><br><span class="line">If this is your first time we recommend running through with the guide: </span><br><span class="line"> - https://guides.cocoapods.org/making/using-pod-lib-create.html</span><br><span class="line"> ( hold cmd and double click links to open in a browser. )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">What platform do you want to use?? [ iOS / macOS ]</span><br><span class="line"> &gt; iOS</span><br><span class="line"></span><br><span class="line">What language do you want to use?? [ Swift / ObjC ]</span><br><span class="line"> &gt; Objc</span><br><span class="line"></span><br><span class="line"> Would you like to include a demo application with your library? [ Yes / No ]</span><br><span class="line"> &gt; Yes</span><br><span class="line"></span><br><span class="line">Which testing frameworks will you use? [ Specta / Kiwi / None ]</span><br><span class="line"> &gt; None</span><br><span class="line"></span><br><span class="line">Would you like to do view based testing? [ Yes / No ]</span><br><span class="line"> &gt; No</span><br><span class="line"></span><br><span class="line">What is your class prefix?</span><br><span class="line"> &gt; YJ</span><br><span class="line"></span><br><span class="line">Running pod install on your new library.</span><br><span class="line"></span><br><span class="line">Analyzing dependencies</span><br><span class="line">Fetching podspec for `YJDemoSDK` from `../`</span><br><span class="line">Downloading dependencies</span><br><span class="line">Installing YJDemoSDK (0.1.0)</span><br><span class="line">Generating Pods project</span><br><span class="line">Integrating client project</span><br><span class="line"></span><br><span class="line">[!] Please close any current Xcode sessions and use `YJDemoSDK.xcworkspace` for this project from now on.</span><br><span class="line">Sending stats</span><br><span class="line">Pod installation complete! There is 1 dependency from the Podfile and 1 total pod installed.</span><br><span class="line"></span><br><span class="line">[!] Automatically assigning platform ios with version 9.3 on target YJDemoSDK_Example because no platform was specified. Please specify a platform for this target in your Podfile. See `https://guides.cocoapods.org/syntax/podfile.html#platform`.</span><br><span class="line"></span><br><span class="line"> Ace! you&apos;re ready to go!</span><br><span class="line"> We will start you off by opening your project in Xcode</span><br><span class="line">  open &apos;YJDemoSDK/Example/YJDemoSDK.xcworkspace&apos;</span><br><span class="line"></span><br><span class="line">To learn more about the template see `https://github.com/CocoaPods/pod-template.git`.</span><br><span class="line">To learn more about creating a new pod, see `http://guides.cocoapods.org/making/making-a-cocoapod`.</span><br></pre></td></tr></table></figure>
 <p>创建完成之后，会自动打开这个pod工程，文件结构如下图所示：</p>
-<img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png" title="[pod库文件结构]">
+<p><img src="/2018/08/07/使用cocoapods插件打包静态库——适用于项目依赖私有库、开源库，私有库又依赖静态库等复杂场景/pod库文件结构.png" alt=""></p>
 <p><strong>podspec</strong></p>
 <p>.podspec 文件描述了一个 pod 库的版本。它详细说明了这个 pod 库中源码应该从哪里取出、应用怎样的构建设置以及其他基本的信息，比如名称、版本、描述等。</p>
 <p>podspec 文件的内容如下，并做了简要注释，不过还是强烈建议阅读下<a href="https://guides.cocoapods.org/" target="_blank" rel="noopener">官方文档</a>:</p>
