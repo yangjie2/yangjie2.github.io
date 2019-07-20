@@ -110,17 +110,17 @@
 <meta property="og:site_name">
 <meta property="og:description" content="作为一个半路出家的小白、一个为了生活不断积累技术知识的俗人，本着急功近利的的精神把工作中遇到的小问题、琐碎知识点总结下来留给我闺女。……">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue1_1.png">
-<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue5_1.png">
-<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue5_2.png">
-<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue11_1.gif">
-<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue12_1.png">
-<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue15_1.png">
-<meta property="og:updated_time" content="2018-08-06T04:18:27.161Z">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue1_1.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue5_1.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue5_2.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue11_1.gif">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue12_1.png">
+<meta property="og:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue15_1.png">
+<meta property="og:updated_time" content="2018-08-06T04:18:27.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS开发琐碎知识点">
 <meta name="twitter:description" content="作为一个半路出家的小白、一个为了生活不断积累技术知识的俗人，本着急功近利的的精神把工作中遇到的小问题、琐碎知识点总结下来留给我闺女。……">
-<meta name="twitter:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/issue1_1.png">
+<meta name="twitter:image" content="https://yangjie2.github.io/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue1_1.png">
 
 
 
@@ -436,7 +436,7 @@
       
         <p>作为一个半路出家的小白、一个为了生活不断积累技术知识的俗人，本着急功近利的的精神把工作中遇到的小问题、琐碎知识点总结下来留给我闺女。<br>…<br>…</p>
 <a id="more"></a>
-<h4 id="1-bringSubViewToFront-不起作用的问题"><a href="#1-bringSubViewToFront-不起作用的问题" class="headerlink" title="1. bringSubViewToFront 不起作用的问题"></a>1. bringSubViewToFront 不起作用的问题</h4><img src="/2018/07/06/iOS开发琐碎知识点/issue1_1.png" title="[bringSubViewToFront 不起作用]">
+<h4 id="1-bringSubViewToFront-不起作用的问题"><a href="#1-bringSubViewToFront-不起作用的问题" class="headerlink" title="1. bringSubViewToFront 不起作用的问题"></a>1. bringSubViewToFront 不起作用的问题</h4><img src="/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue1_1.png" title="[bringSubViewToFront 不起作用]">
 <p>bringSubViewToFront方法只对该view的childView起作用，而对grandView不起作用，可以用上面的方法，把grandView前置。</p>
 <p>最近项目中遇到一个坑，有一个父view，该父view中添加了第三方SDK中的view，所以没有准确判断view的层级关系，导致我添加的一个label无论怎样调用bringSubViewToFront都无法显示在最前面。后来发现原因是，我的label添加后，调用bringSubViewToFront过早，因为这个时候第三方view还没加载上去，所以调用bringSubViewToFront也不会将label显示在第三方veiw的前面。要在第三方view加载完成后，才会起作用。</p>
 <p>总结：bringSubViewToFront方法只会将某个view放在其父view的所有已存在的子view的前面。后来添加的view依然有可能遮挡住这个view.</p>
@@ -453,8 +453,8 @@
 </ol>
 <h4 id="4-table-view-优化"><a href="#4-table-view-优化" class="headerlink" title="4. table view 优化"></a>4. table view 优化</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1. cell 复用</span><br><span class="line">2. view 的opaque属性尽可能设置为 YES</span><br><span class="line">3. 避免渐变、图像伸缩、离屏渲染</span><br><span class="line">4. 如果cell高度不变，缓存计算出的高度</span><br><span class="line">5. 如果cell展示的内容包含网络请求的内容，缓存并且异步加载</span><br><span class="line">6. 阴影用shadow path</span><br><span class="line">7. 尽可能减少cell的subviews数量</span><br><span class="line">8. 在cellForRowAtIndexPath回调中尽可能少做事，如果必须，尽可能缓存耗时操作的结果</span><br><span class="line">9. 抽象出合理的数据结构来展示信息</span><br><span class="line">10.直接设置rowHeight、sectionFooterHeight、sectionHeaderHeight的值，不要在相应的代理中设置</span><br></pre></td></tr></table></figure>
 <h4 id="5-xib-中使用-autolayout-布局"><a href="#5-xib-中使用-autolayout-布局" class="headerlink" title="5. xib 中使用 autolayout 布局"></a>5. xib 中使用 autolayout 布局</h4><p>关于 xib 中使用 autolayout 布局的问题，下面两张图应该说明的很明白了。</p>
-<img src="/2018/07/06/iOS开发琐碎知识点/issue5_1.png" title="[]">
-<img src="/2018/07/06/iOS开发琐碎知识点/issue5_2.png" title="[]">
+<img src="/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue5_1.png" title="[]">
+<img src="/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue5_2.png" title="[]">
 <h4 id="6-使用-setValue-forKey-设置对象属性值"><a href="#6-使用-setValue-forKey-设置对象属性值" class="headerlink" title="6. 使用 setValue:forKey:设置对象属性值"></a>6. 使用 setValue:forKey:设置对象属性值</h4><p>在使用 setValue:forKey: 设置对象属性值时，不管该属性是否为只读的、不管在 .h 或者 .m 文件中，都能够成功设置！ 果如你重写了这个属性的 setter 方法，那么也会走该属性的 setter 方法。</p>
 <h4 id="7-Class-id-objc-object"><a href="#7-Class-id-objc-object" class="headerlink" title="7. Class / id / objc_object"></a>7. Class / id / objc_object</h4><p>Objective-C类是由 Class 类型来表示的，它实际上是一个指向<br>objc_class 结构体的指针。Class 的定义如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef struct objc_class *Class;</span><br></pre></td></tr></table></figure></p>
 <p>查看 objc/runtime.h 中 objc_class 结构体的定义如下：</p>
@@ -492,7 +492,7 @@
 <p>当不设置 window 的 frame 或者设置 window 的 frame 为 [UIScreen mainScreen].bounds 时，在 rootViewController 中才能够设置状态栏样式。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//能够正确设置状态栏的代码：</span><br><span class="line"></span><br><span class="line">UIWindow *delegateWindow = [UIApplication sharedApplication].delegate.window;</span><br><span class="line">CGRect rect = [UIScreen mainScreen].bounds;</span><br><span class="line">self.window = [[UIWindow alloc] init];</span><br><span class="line">self.window.rootViewController = self.rootVC;</span><br><span class="line">[self.window makeKeyAndVisible];</span><br><span class="line">self.window.frame = CGRectMake(0, -rect.size.height, rect.size.width, rect.size.height);</span><br><span class="line">// 保持原先的keyWindow，避免一些奇怪的bug</span><br><span class="line">[delegateWindow makeKeyWindow];</span><br><span class="line">[UIView animateWithDuration:0.3 animations:^&#123;</span><br><span class="line">    self.window.frame = rect;</span><br><span class="line">&#125; completion:NULL];</span><br></pre></td></tr></table></figure>
 <h4 id="11-当-present-一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题"><a href="#11-当-present-一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题" class="headerlink" title="11. 当 present 一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题"></a>11. 当 present 一个viewController并且设置这个viewController背景透明度时，背景色变黑的问题</h4><p>想模态展示一个VC窗口，设置它的背景透明度为0.5，却发觉prsent后的背景色变为黑色。</p>
-<img src="/2018/07/06/iOS开发琐碎知识点/issue11_1.gif" title="[]">
+<img src="/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue11_1.gif" title="[]">
 <p>原因是：</p>
 <blockquote>
 <p>NavigationController and the View Controllers are designed in such a way that only one view controller may show at a time. When a new view controller is pushed/presented the previous view controller will be hidden by the system. So when you reduce the modal view’s alpha you will possibly see the window’s backgroundColor (the black color you see now).</p>
@@ -505,7 +505,7 @@
 <li>App内部网页打开</li>
 <li>应用内点击打开</li>
 </ul>
-<img src="/2018/07/06/iOS开发琐碎知识点/issue12_1.png" title="[]">
+<img src="/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue12_1.png" title="[]">
 <p>这四种方式均跳转到 DetailViewController 界面。普通的跳转依然可以满足该场景, 最简单的解决方案是在四个不同的地方都写一个独立的界面打开逻辑。作为一名有追求的开发者, 这么冗余的四份入口代码显然不合适。</p>
 <p>一种解决方案是采用 URL 协议统一跳转。每个 viewController 页面定义与之对应的 URL，在各个入口只需要调用打开该URL的方法即可完成页面的创建以及跳转。</p>
 <p>基于URL的路由方案：</p>
@@ -529,7 +529,7 @@
 <p>Objective-C 在 C 的表达不存在的基础上增加了nil。nil 是一个指向不存在的对象指针。虽然它在语义上与NULL 不同，但它们在技术上是相等的。</p>
 <p>在框架层面，Foundation 定义了 NSNull，即一个类方法 +null，它返回一个单独的 NSNull 对象。NSNull 与 nil 以及 NULL 不同，因为它是一个实际的对象，而不是一个零值。、</p>
 <p>在 Foundation/NSObjCRuntime.h 中，Nil 被定义为指向零的类指针。它并不常常出现，但至少值得注意。</p>
-<img src="/2018/07/06/iOS开发琐碎知识点/issue15_1.png" title="[]">
+<img src="/2018/07/06/iOS开发琐碎知识点/07/06/iOS开发琐碎知识点/issue15_1.png" title="[]">
 <h4 id="16-CGGeometry"><a href="#16-CGGeometry" class="headerlink" title="16. CGGeometry"></a>16. CGGeometry</h4><p>GRect 用于表示屏幕上绘制的所有视图的 frame，一个程序员操作矩形几何体的能力决定着他在图形编程上的成功。</p>
 <h5 id="变换"><a href="#变换" class="headerlink" title="变换"></a>变换</h5><p>几何变换，这些函数返回在传入的矩形中做某些特定操作后的 CGRect</p>
 <ul>
