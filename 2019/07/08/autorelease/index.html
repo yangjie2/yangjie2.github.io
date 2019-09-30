@@ -111,7 +111,7 @@
 <meta property="og:description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2019/07/08/autorelease/NSAutoreleasePool对象生命周期.png">
-<meta property="og:updated_time" content="2019-07-20T07:08:19.330Z">
+<meta property="og:updated_time" content="2019-07-27T10:53:55.375Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objective-C autorelease">
 <meta name="twitter:description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
@@ -366,7 +366,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-07-20 15:08:19" itemprop="dateModified" datetime="2019-07-20T15:08:19+08:00">2019-07-20</time>
+                <time title="Modified: 2019-07-27 18:53:55" itemprop="dateModified" datetime="2019-07-27T18:53:55+08:00">2019-07-27</time>
               
             
           </span>
@@ -455,6 +455,16 @@
 <p>但是在少数情况下，你可能会创建大量临时对象，这些对象会大大增加内存占用，所以你希望快速的处理这些对象。此时你需要创建自己的 autorelease pool 。下面示例怎样在一个 for 循环中使用 autorelease pool<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSArray *urls = &lt;# An array of file URLs #&gt;;</span><br><span class="line">for (NSURL *url in urls) &#123;</span><br><span class="line"> </span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSError *error;</span><br><span class="line">        NSString *fileContents = [NSString stringWithContentsOfURL:url</span><br><span class="line">                                         encoding:NSUTF8StringEncoding error:&amp;error];</span><br><span class="line">        /* Process the string, creating and autoreleasing more objects. */</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>上述 for 循环每次处理一个文件，在  autorelease pool block 中的任何对象(比如 fileContents)会发送一个 autorelease 消息，在代码块结束时对象被 release。</p>
 <p>在 autorelease pool block  结尾之后，应当认为上面所有的 autorelease 对象都已被处理。不要再向该对象发送消息或将其返回给方法调用者。如果你必须在 autorelease pool block 之外使用临时对象，可以在代码块内发送 <code>retain</code> 消息，然后在代码块结束之后向该对象发送 <code>autorelease</code> 消息，示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">– (id)findMatchingObject:(id)anObject &#123;</span><br><span class="line"> </span><br><span class="line">    id match;</span><br><span class="line">    while (match == nil) &#123;</span><br><span class="line">        @autoreleasepool &#123;</span><br><span class="line"> </span><br><span class="line">            /* Do a search that creates a lot of temporary objects. */</span><br><span class="line">            match = [self expensiveSearchForObject:anObject];</span><br><span class="line"> </span><br><span class="line">            if (match != nil) &#123;</span><br><span class="line">                [match retain]; /* Keep match around. */</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    return [match autorelease];   /* Let match go and return it. */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="其他涉及到-autoreleasepool-的地方"><a href="#其他涉及到-autoreleasepool-的地方" class="headerlink" title="其他涉及到 autoreleasepool 的地方"></a>其他涉及到 autoreleasepool 的地方</h4><p>以下是创建非自己生成、非自己持有的对象时，调用的类方法的源码示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+ (id)array</span><br><span class="line">&#123;</span><br><span class="line">    return [[NSMutableArray alloc] init];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码可以写成如下形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+ (id)array</span><br><span class="line">&#123;</span><br><span class="line">    /*</span><br><span class="line">     * 自己生成并自己持有对象</span><br><span class="line">     */</span><br><span class="line">    id obj = [[NSMutableArray alloc] init];</span><br><span class="line">    return obj;</span><br><span class="line">    /* </span><br><span class="line">     * 变量 obj 超出其作用域，编译器将它自动注册到 autoreleasepool</span><br><span class="line">     */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>没有显式制定所有权修饰符，所以 obj 默认是 <code>__strong</code> 的。由于 return 使得 obj 对象超出其作用域，所以该强引用对应的自己持有的对象会被自动释放，但是，该对象作为函数的返回值，编译器会自动将其注册到 autoreleasepool 。这也就是为什么 <code>[NSMutableArray array]</code> 会生成非自己生成、非自己持有的对象。</p>
+<p>我们知道， <strong>weak 修饰符是为了避免循环引用而使用的，但是在访问附有 </strong>weak 修饰符的变量时，实际上必定要访问注册到 autoreleasepool 中的对象。比如有如下源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">id obj0 = [[NSArray alloc] init];</span><br><span class="line">id __weak obj1 = obj0;</span><br><span class="line">NSLog(@&quot;class=%@&quot;, [obj1 class]);</span><br></pre></td></tr></table></figure>
+<p>上述代码等价于：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">id obj0 = [[NSArray alloc] init];</span><br><span class="line">id __weak obj1 = obj0;</span><br><span class="line">id __autoreleasing tmp = obj1;</span><br><span class="line">NSLog(@&quot;class=%@&quot;, [tmp class]);</span><br></pre></td></tr></table></figure>
+<p>为什么在访问附有 <strong>weak 修饰符的变量时必须访问注册到 autoreleasepool 的对象呢？这是因为， </strong>weak 修饰符只持有对象的弱引用，而在访问对象的过程中，该对象有可能被废弃。</p>
 
       
     </div>
@@ -590,7 +600,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-count">14</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -721,7 +731,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#About-Autorelease-Pool-Blocks"><span class="nav-number">1.</span> <span class="nav-text">About Autorelease Pool Blocks</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-autorelease-pool-来减少峰值内存占用量"><span class="nav-number">2.</span> <span class="nav-text">使用 autorelease pool 来减少峰值内存占用量</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#About-Autorelease-Pool-Blocks"><span class="nav-number">1.</span> <span class="nav-text">About Autorelease Pool Blocks</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-autorelease-pool-来减少峰值内存占用量"><span class="nav-number">2.</span> <span class="nav-text">使用 autorelease pool 来减少峰值内存占用量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他涉及到-autoreleasepool-的地方"><span class="nav-number">3.</span> <span class="nav-text">其他涉及到 autoreleasepool 的地方</span></a></li></ol></div>
             
 
           </div>
