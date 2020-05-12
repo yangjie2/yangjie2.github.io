@@ -112,7 +112,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2020/05/08/Objective-C-Method-Swizzling/method_swizzling1.png">
 <meta property="og:image" content="https://yangjie2.github.io/2020/05/08/Objective-C-Method-Swizzling/method_swizzling2.png">
-<meta property="og:updated_time" content="2020-05-12T11:05:07.039Z">
+<meta property="og:updated_time" content="2020-05-12T11:10:00.215Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objective-C Method Swizzling">
 <meta name="twitter:description" content="Method swizzling 用于改变一个已经存在的 selector 的实现。因为 method swizzling 可以通过交换 selector 来改变函数指针的引用。">
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-05-12 19:05:07" itemprop="dateModified" datetime="2020-05-12T19:05:07+08:00">2020-05-12</time>
+                <time title="Modified: 2020-05-12 19:10:00" itemprop="dateModified" datetime="2020-05-12T19:10:00+08:00">2020-05-12</time>
               
             
           </span>
@@ -452,9 +452,9 @@
 <p>如果上述例子中被hook的实例方法变为类方法，对应的代码有两处不同：</p>
 <ol>
 <li>获取 Method 的接口变为：<code>class_getClassMethod</code></li>
-<li>类方法保存在元类的 method-list 中，向一个类中动态添加类方法，就是将方法添加到元类 Meta Class 中，上述代码改动两行即可：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">   Class meta_class = objc_getMetaClass(class_getName(originClass));</span><br><span class="line">        class_addMethod(meta_class, swizzSel, method_getImplementation(swizzClass_swizzMethod), method_getTypeEncoding(swizzClass_swizzMethod));</span><br><span class="line">   ``` </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#### 3. 数组越界防护，字典nil值防护</span><br><span class="line"></span><br><span class="line">数组/字典是以类蔟方式实现的，NSArray 和 NSMutableArray 并不是数组真实的类名。在进行hook时注意需要拿到真正的类名称。因为在苹果内部实现中，其真实的类名是有可能发生变化的，因此不建议写死。</span><br></pre></td></tr></table></figure>
-</li>
+<li>类方法保存在元类的 method-list 中，向一个类中动态添加类方法，就是将方法添加到元类 Meta Class 中，上述代码改动两行即可：</li>
 </ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    Class meta_class = objc_getMetaClass(class_getName(originClass));</span><br><span class="line">    class_addMethod(meta_class, swizzSel, method_getImplementation(swizzClass_swizzMethod), method_getTypeEncoding(swizzClass_swizzMethod));</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#### 3. 数组越界防护</span><br><span class="line"></span><br><span class="line">数组/字典是以类蔟方式实现的，NSArray 和 NSMutableArray 并不是数组真实的类名。在进行hook时注意需要拿到真正的类名称。因为在苹果内部实现中，其真实的类名是有可能发生变化的，因此不建议写死。</span><br></pre></td></tr></table></figure>
 <p>#import “NSArray+Safe.h”</p>
 <p>#import &lt;objc/runtime.h&gt;</p>
 <p>@implementation NSArray (Safe)</p>
