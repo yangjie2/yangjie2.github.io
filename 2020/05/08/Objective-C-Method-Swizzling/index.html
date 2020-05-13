@@ -112,7 +112,7 @@
 <meta property="og:locale" content="default">
 <meta property="og:image" content="https://yangjie2.github.io/2020/05/08/Objective-C-Method-Swizzling/method_swizzling1.png">
 <meta property="og:image" content="https://yangjie2.github.io/2020/05/08/Objective-C-Method-Swizzling/method_swizzling2.png">
-<meta property="og:updated_time" content="2020-05-12T11:10:00.215Z">
+<meta property="og:updated_time" content="2020-05-13T01:57:18.523Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Objective-C Method Swizzling">
 <meta name="twitter:description" content="Method swizzling 用于改变一个已经存在的 selector 的实现。因为 method swizzling 可以通过交换 selector 来改变函数指针的引用。">
@@ -367,7 +367,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-05-12 19:10:00" itemprop="dateModified" datetime="2020-05-12T19:10:00+08:00">2020-05-12</time>
+                <time title="Modified: 2020-05-13 09:57:18" itemprop="dateModified" datetime="2020-05-13T09:57:18+08:00">2020-05-13</time>
               
             
           </span>
@@ -452,60 +452,12 @@
 <p>如果上述例子中被hook的实例方法变为类方法，对应的代码有两处不同：</p>
 <ol>
 <li>获取 Method 的接口变为：<code>class_getClassMethod</code></li>
-<li>类方法保存在元类的 method-list 中，向一个类中动态添加类方法，就是将方法添加到元类 Meta Class 中，上述代码改动两行即可：</li>
+<li>类方法保存在元类的 method-list 中，向一个类中动态添加类方法，就是将方法添加到元类 Meta Class 中，上述代码改动两行即可:</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    Class meta_class = objc_getMetaClass(class_getName(originClass));</span><br><span class="line">    class_addMethod(meta_class, swizzSel, method_getImplementation(swizzClass_swizzMethod), method_getTypeEncoding(swizzClass_swizzMethod));</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#### 3. 数组越界防护</span><br><span class="line"></span><br><span class="line">数组/字典是以类蔟方式实现的，NSArray 和 NSMutableArray 并不是数组真实的类名。在进行hook时注意需要拿到真正的类名称。因为在苹果内部实现中，其真实的类名是有可能发生变化的，因此不建议写死。</span><br></pre></td></tr></table></figure>
-<p>#import “NSArray+Safe.h”</p>
-<p>#import &lt;objc/runtime.h&gt;</p>
-<p>@implementation NSArray (Safe)</p>
-<ul>
-<li><p>(void)load {<br>  static dispatch_once_t onceToken;<br>  dispatch_once(&amp;onceToken, ^{</p>
-<pre><code>NSArray *arr = [NSArray array];
-Class cls = NSClassFromString(arr.className);
-NSMutableArray *muArr = [NSMutableArray array];
-Class cls_mu = NSClassFromString(muArr.className);
-
-Method origin_method = class_getInstanceMethod(cls, @selector(objectAtIndex:));
-Method swizz_method = class_getInstanceMethod(cls, @selector(safeObjectAtIndex:));
-method_exchangeImplementations(origin_method, swizz_method);
-
-Method origin_method_mu = class_getInstanceMethod(cls_mu, @selector(objectAtIndex:));
-Method swizz_method_mu = class_getInstanceMethod(cls_mu, @selector(safeMutableObjectAtIndex:));
-method_exchangeImplementations(origin_method_mu, swizz_method_mu);
-
-//数组下标
-Method origin_method_sub = class_getInstanceMethod(cls, @selector(objectAtIndexedSubscript:));
-Method swizz_method_sub = class_getInstanceMethod(cls, @selector(safeObjectAtIndexedSubscript:));
-method_exchangeImplementations(origin_method_sub, swizz_method_sub);
-
-Method origin_method_muta_sub = class_getInstanceMethod(cls_mu, @selector(objectAtIndexedSubscript:));
-Method swizz_method_muta_sub = class_getInstanceMethod(cls_mu, @selector(safeMutableObjectAtIndexedSubscript:));
-method_exchangeImplementations(origin_method_muta_sub, swizz_method_muta_sub);
-</code></pre><p>  });<br>}</p>
-</li>
-</ul>
-<ul>
-<li><p>(id)safeObjectAtIndex:(NSUInteger)index {<br>  if (self.count &gt; index &amp;&amp; self.count) {</p>
-<pre><code>return [self safeObjectAtIndex:index];
-</code></pre><p>  }<br>  NSLog(@”safeObjectAtIndex: error , out of index”);<br>  return nil;<br>}</p>
-</li>
-<li><p>(id)safeMutableObjectAtIndex:(NSUInteger)index {<br>  if (self.count &gt; index &amp;&amp; self.count) {</p>
-<pre><code>return [self safeMutableObjectAtIndex:index];
-</code></pre><p>  }<br>  NSLog(@”safeMutableObjectAtIndex: error , out of index”);<br>  return nil;<br>}</p>
-</li>
-</ul>
-<ul>
-<li><p>(id)safeObjectAtIndexedSubscript:(NSUInteger)index {<br>  if (self.count &gt; index &amp;&amp; self.count) {</p>
-<pre><code>return [self safeObjectAtIndexedSubscript:index];
-</code></pre><p>  }<br>  NSLog(@”safeObjectAtIndexedSubscript: error, out of index”);<br>  return nil;<br>}</p>
-</li>
-<li><p>(id)safeMutableObjectAtIndexedSubscript:(NSUInteger)index {<br>  if (self.count &gt; index &amp;&amp; self.count) {</p>
-<pre><code>return [self safeMutableObjectAtIndexedSubscript:index];
-</code></pre><p>  }<br>  NSLog(@”safeMutableObjectAtIndexedSubscript: error, out of index”);<br>  return nil;<br>}</p>
-</li>
-</ul>
-<p>@end</p>
-<p><code>`</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class meta_class = objc_getMetaClass(class_getName(originClass));</span><br><span class="line">class_addMethod(meta_class, swizzSel, method_getImplementation(swizzClass_swizzMethod), method_getTypeEncoding(swizzClass_swizzMethod));</span><br></pre></td></tr></table></figure>
+<p><br></p>
+<h4 id="3-数组越界防护"><a href="#3-数组越界防护" class="headerlink" title="3. 数组越界防护."></a>3. 数组越界防护.</h4><p>数组/字典是以类蔟方式实现的，NSArray 和 NSMutableArray 并不是数组真实的类名。在进行hook时注意需要拿到真正的类名称。因为在苹果内部实现中，其真实的类名是有可能发生变化的，因此不建议写死。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#import &quot;NSArray+Safe.h&quot;</span><br><span class="line">#import &lt;objc/runtime.h&gt;</span><br><span class="line"></span><br><span class="line">@implementation NSArray (Safe)</span><br><span class="line"></span><br><span class="line">+ (void)load &#123;</span><br><span class="line">    static dispatch_once_t onceToken;</span><br><span class="line">    dispatch_once(&amp;onceToken, ^&#123;</span><br><span class="line">        NSArray *arr = [NSArray array];</span><br><span class="line">        Class cls = NSClassFromString(arr.className);</span><br><span class="line">        NSMutableArray *muArr = [NSMutableArray array];</span><br><span class="line">        Class cls_mu = NSClassFromString(muArr.className);</span><br><span class="line"></span><br><span class="line">        Method origin_method = class_getInstanceMethod(cls, @selector(objectAtIndex:));</span><br><span class="line">        Method swizz_method = class_getInstanceMethod(cls, @selector(safeObjectAtIndex:));</span><br><span class="line">        method_exchangeImplementations(origin_method, swizz_method);</span><br><span class="line">        </span><br><span class="line">        Method origin_method_mu = class_getInstanceMethod(cls_mu, @selector(objectAtIndex:));</span><br><span class="line">        Method swizz_method_mu = class_getInstanceMethod(cls_mu, @selector(safeMutableObjectAtIndex:));</span><br><span class="line">        method_exchangeImplementations(origin_method_mu, swizz_method_mu);</span><br><span class="line">        </span><br><span class="line">        //数组下标</span><br><span class="line">        Method origin_method_sub = class_getInstanceMethod(cls, @selector(objectAtIndexedSubscript:));</span><br><span class="line">        Method swizz_method_sub = class_getInstanceMethod(cls, @selector(safeObjectAtIndexedSubscript:));</span><br><span class="line">        method_exchangeImplementations(origin_method_sub, swizz_method_sub);</span><br><span class="line">        </span><br><span class="line">        Method origin_method_muta_sub = class_getInstanceMethod(cls_mu, @selector(objectAtIndexedSubscript:));</span><br><span class="line">        Method swizz_method_muta_sub = class_getInstanceMethod(cls_mu, @selector(safeMutableObjectAtIndexedSubscript:));</span><br><span class="line">        method_exchangeImplementations(origin_method_muta_sub, swizz_method_muta_sub);</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (id)safeObjectAtIndex:(NSUInteger)index &#123;</span><br><span class="line">    if (self.count &gt; index &amp;&amp; self.count) &#123;</span><br><span class="line">        return [self safeObjectAtIndex:index];</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;safeObjectAtIndex: error , out of index&quot;);</span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (id)safeMutableObjectAtIndex:(NSUInteger)index &#123;</span><br><span class="line">    if (self.count &gt; index &amp;&amp; self.count) &#123;</span><br><span class="line">        return [self safeMutableObjectAtIndex:index];</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;safeMutableObjectAtIndex: error , out of index&quot;);</span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (id)safeObjectAtIndexedSubscript:(NSUInteger)index &#123;</span><br><span class="line">    if (self.count &gt; index &amp;&amp; self.count) &#123;</span><br><span class="line">        return [self safeObjectAtIndexedSubscript:index];</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;safeObjectAtIndexedSubscript: error, out of index&quot;);</span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (id)safeMutableObjectAtIndexedSubscript:(NSUInteger)index &#123;</span><br><span class="line">    if (self.count &gt; index &amp;&amp; self.count) &#123;</span><br><span class="line">        return [self safeMutableObjectAtIndexedSubscript:index];</span><br><span class="line">    &#125;</span><br><span class="line">    NSLog(@&quot;safeMutableObjectAtIndexedSubscript: error, out of index&quot;);</span><br><span class="line">    return nil;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
 <h2 id="⚠️-Method-swizzling-的危险性"><a href="#⚠️-Method-swizzling-的危险性" class="headerlink" title="⚠️ Method swizzling 的危险性"></a>⚠️ Method swizzling 的危险性</h2><p>在项目中还是要慎重使用的，使用不当带来的问题，将会让你付出很大代价去排查。Method swizzling 的危险性可以参考以下文章：</p>
 <p><a href="https://juejin.im/entry/5a1fceddf265da43310d9985#menu_index_5" target="_blank" rel="noopener">iOS 界的毒瘤：Method Swizzle</a></p>
 <p><a href="http://yulingtianxia.com/blog/2017/04/17/Objective-C-Method-Swizzling/" target="_blank" rel="noopener">Objective-C Method Swizzling</a></p>
@@ -776,7 +728,7 @@ method_exchangeImplementations(origin_method_muta_sub, swizz_method_muta_sub);
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Method-swizzling-原理"><span class="nav-number">1.</span> <span class="nav-text">Method swizzling 原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Method-swizzling-应用"><span class="nav-number">2.</span> <span class="nav-text">Method swizzling 应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-替换一个类的实例方法"><span class="nav-number">2.0.1.</span> <span class="nav-text">1. 替换一个类的实例方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-hook-一个“黑盒”类的实例方法（拿不到该类的头文件，只知道该类的名字和要hook的函数名字）"><span class="nav-number">2.0.2.</span> <span class="nav-text">2. hook 一个“黑盒”类的实例方法（拿不到该类的头文件，只知道该类的名字和要hook的函数名字）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#⚠️-Method-swizzling-的危险性"><span class="nav-number">3.</span> <span class="nav-text">⚠️ Method swizzling 的危险性</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Method-swizzling-原理"><span class="nav-number">1.</span> <span class="nav-text">Method swizzling 原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Method-swizzling-应用"><span class="nav-number">2.</span> <span class="nav-text">Method swizzling 应用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-替换一个类的实例方法"><span class="nav-number">2.0.1.</span> <span class="nav-text">1. 替换一个类的实例方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-hook-一个“黑盒”类的实例方法（拿不到该类的头文件，只知道该类的名字和要hook的函数名字）"><span class="nav-number">2.0.2.</span> <span class="nav-text">2. hook 一个“黑盒”类的实例方法（拿不到该类的头文件，只知道该类的名字和要hook的函数名字）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-数组越界防护"><span class="nav-number">2.0.3.</span> <span class="nav-text">3. 数组越界防护.</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#⚠️-Method-swizzling-的危险性"><span class="nav-number">3.</span> <span class="nav-text">⚠️ Method swizzling 的危险性</span></a></li></ol></div>
             
 
           </div>
