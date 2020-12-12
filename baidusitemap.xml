@@ -4,6 +4,28 @@
 
     
   <url>
+    <loc>https://yangjie2.github.io/2020/12/12/Category%E4%B8%8EExtention/</loc>
+    <lastmod>2020-12-12T12:33:28.906Z</lastmod>
+    <data>
+        <display>
+        <title>Category与Extention</title>
+        <pubTime>2020-12-12T10:37:59.000Z</pubTime>
+        
+        <tag>Objective-C</tag>
+         
+        <tag>runtime</tag>
+         
+         
+           
+             
+              <breadCrumb title="iOS dev" url="https://yangjie2.github.io/categories/iOS-dev/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://yangjie2.github.io/2020/05/08/Objective-C-Method-Swizzling/</loc>
     <lastmod>2020-05-13T01:57:18.000Z</lastmod>
     <data>
