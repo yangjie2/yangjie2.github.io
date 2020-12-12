@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next mist" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
+<meta name="keywords" content="Objective-C,内存管理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Objective-C autorelease">
+<meta property="og:url" content="https://yangjie2.github.io/2019/07/08/autorelease/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://yangjie2.github.io/2019/07/08/autorelease/NSAutoreleasePool对象生命周期.png">
+<meta property="og:updated_time" content="2019-07-27T10:53:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Objective-C autorelease">
+<meta name="twitter:description" content="Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。">
+<meta name="twitter:image" content="https://yangjie2.github.io/2019/07/08/autorelease/NSAutoreleasePool对象生命周期.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://yangjie2.github.io/2019/07/08/autorelease/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Objective-C autorelease | </title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">空谷无人，水流花开</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />Categories</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />Tags</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />About</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangjie2.github.io/2019/07/08/autorelease/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yang Jie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Objective-C autorelease
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-07-08 15:59:43" itemprop="dateCreated datePublished" datetime="2019-07-08T15:59:43+08:00">2019-07-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-07-27 18:53:55" itemprop="dateModified" datetime="2019-07-27T18:53:55+08:00">2019-07-27</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/iOS-dev/" itemprop="url" rel="index"><span itemprop="name">iOS dev</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/07/08/autorelease/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2019/07/08/autorelease/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Objective-C 内存管理中的一个重要概念是 autorelease，自动释放。它类似于C语言中的自动变量的特性。回忆一下C语言中的自动变量：程序执行时，若某个自动变量超出其作用域，该自动变量将被自动废弃，不可再访问。autorelease 会像C语言的自动变量那样来对待对象实例，当超出变量作用域时，对象实例的 release 方法被调用。</p>
+<a id="more"></a>
+<p>autorelease 的具体使用方法如下：</p>
+<ol>
+<li>生成并持有 NSAutoreleasePool 对象</li>
+<li>调用对象实例的 autorelease 方法</li>
+<li>废弃 NSAutoreleasePool 对象</li>
+</ol>
+<p>NSAutoreleasePool 对象的生命周期相当于C语言变量的作用域。在废弃 NSAutoreleasePool 对象时，所有调用过 autorelease 的实例对象都将调用 release 方法。如下图所示：</p>
+<p><img src="/2019/07/08/autorelease/NSAutoreleasePool对象生命周期.png" alt=""></p>
+<p>使用代码表示如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//非ARC下</span><br><span class="line">NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];</span><br><span class="line">id obj = [[NSObject alloc] init];</span><br><span class="line">[obj autorelease];</span><br><span class="line">..</span><br><span class="line">..</span><br><span class="line">[pool drain];</span><br></pre></td></tr></table></figure></p>
+<p>最后一行的 <code>[pool drain]</code>等同于 <code>[obj release]</code>。</p>
+<p>NSAutoreleasePool 是与线程紧密相关的，每个线程都会维护一个自己的 NSAutoreleasePool 栈。在主线程 NSRunLoop 的每个 Loop 开始前，系统会自动创建一个 NSAutoreleasePool 对象 ，并在这个 Loop 结束时 drain 。所以在通常情况下，开发者不需要非得自己使用 NSAutoreleasePool 来进行开发工作。</p>
+<p>自动释放池提供了一种机制，通过这种机制，你可以放弃对象的所有权，但又能避免对象被立即释放的可能性。通常你不需要创建自己的 autorelease pool ，但是某些场景下你必须这么做。</p>
+<h4 id="About-Autorelease-Pool-Blocks"><a href="#About-Autorelease-Pool-Blocks" class="headerlink" title="About Autorelease Pool Blocks"></a>About Autorelease Pool Blocks</h4><p>在 ARC 下，autorelease pool 使用关键字 <code>@autoreleasepool</code> 标记<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@autoreleasepool &#123;</span><br><span class="line">    // Code that creates autoreleased objects.</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>像其他代码一样，autorelease pool 也是可以嵌套的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@autoreleasepool &#123;</span><br><span class="line">    // . . .</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        // . . .</span><br><span class="line">    &#125;</span><br><span class="line">    . . .</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Cocoa 总是希望代码能够在 autorelease pool 中执行，否则 autorelease 对象将不会被释放，应用程序内存泄露。如果你在 autorelease pool block 之外向对象发送 autorelease 消息，Cocoa 会打印一条错误信息。AppKit 与 UIKit 框架会在 autorelease pool 中处理每个 event-loop 循环(比如鼠标按下事件或者一次点击)，因此你通常不需要自己创建一个 autorelease pool，甚至很难见到这样的代码。然而，以下三种情况需要创建你自己的 autorelease pool：</p>
+<ol>
+<li>你写的程序不是基于 UI framework 的，比如命令行工具</li>
+<li>在一个循环中，你创建了大量临时对象. 你可以在循环内使用 autorelease pool 在下一次迭代之前处理这些对象，在循环中使用 autorelease pool 有助于减少应用程序的最大内存占用量</li>
+<li>Cocoa应用中的每个线程都维护自己的自动释放池堆栈。 如果您正在编写仅基于 Foundation 的程序或者分离线程，则需要创建自己的autorelease pool</li>
+</ol>
+<h4 id="使用-autorelease-pool-来减少峰值内存占用量"><a href="#使用-autorelease-pool-来减少峰值内存占用量" class="headerlink" title="使用 autorelease pool 来减少峰值内存占用量"></a>使用 autorelease pool 来减少峰值内存占用量</h4><p>许多应用创建的临时对象都是 autorelease 的，这些对象会持续添加到应用内存中，直到代码块结束。在大多数情况下，允许临时对象累积直到当前事件循环迭代结束不会导致过多的内存开销。</p>
+<p>但是在少数情况下，你可能会创建大量临时对象，这些对象会大大增加内存占用，所以你希望快速的处理这些对象。此时你需要创建自己的 autorelease pool 。下面示例怎样在一个 for 循环中使用 autorelease pool<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSArray *urls = &lt;# An array of file URLs #&gt;;</span><br><span class="line">for (NSURL *url in urls) &#123;</span><br><span class="line"> </span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSError *error;</span><br><span class="line">        NSString *fileContents = [NSString stringWithContentsOfURL:url</span><br><span class="line">                                         encoding:NSUTF8StringEncoding error:&amp;error];</span><br><span class="line">        /* Process the string, creating and autoreleasing more objects. */</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上述 for 循环每次处理一个文件，在  autorelease pool block 中的任何对象(比如 fileContents)会发送一个 autorelease 消息，在代码块结束时对象被 release。</p>
+<p>在 autorelease pool block  结尾之后，应当认为上面所有的 autorelease 对象都已被处理。不要再向该对象发送消息或将其返回给方法调用者。如果你必须在 autorelease pool block 之外使用临时对象，可以在代码块内发送 <code>retain</code> 消息，然后在代码块结束之后向该对象发送 <code>autorelease</code> 消息，示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">– (id)findMatchingObject:(id)anObject &#123;</span><br><span class="line"> </span><br><span class="line">    id match;</span><br><span class="line">    while (match == nil) &#123;</span><br><span class="line">        @autoreleasepool &#123;</span><br><span class="line"> </span><br><span class="line">            /* Do a search that creates a lot of temporary objects. */</span><br><span class="line">            match = [self expensiveSearchForObject:anObject];</span><br><span class="line"> </span><br><span class="line">            if (match != nil) &#123;</span><br><span class="line">                [match retain]; /* Keep match around. */</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    return [match autorelease];   /* Let match go and return it. */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="其他涉及到-autoreleasepool-的地方"><a href="#其他涉及到-autoreleasepool-的地方" class="headerlink" title="其他涉及到 autoreleasepool 的地方"></a>其他涉及到 autoreleasepool 的地方</h4><p>以下是创建非自己生成、非自己持有的对象时，调用的类方法的源码示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+ (id)array</span><br><span class="line">&#123;</span><br><span class="line">    return [[NSMutableArray alloc] init];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码可以写成如下形式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">+ (id)array</span><br><span class="line">&#123;</span><br><span class="line">    /*</span><br><span class="line">     * 自己生成并自己持有对象</span><br><span class="line">     */</span><br><span class="line">    id obj = [[NSMutableArray alloc] init];</span><br><span class="line">    return obj;</span><br><span class="line">    /* </span><br><span class="line">     * 变量 obj 超出其作用域，编译器将它自动注册到 autoreleasepool</span><br><span class="line">     */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>没有显式制定所有权修饰符，所以 obj 默认是 <code>__strong</code> 的。由于 return 使得 obj 对象超出其作用域，所以该强引用对应的自己持有的对象会被自动释放，但是，该对象作为函数的返回值，编译器会自动将其注册到 autoreleasepool 。这也就是为什么 <code>[NSMutableArray array]</code> 会生成非自己生成、非自己持有的对象。</p>
+<p>我们知道， <strong>weak 修饰符是为了避免循环引用而使用的，但是在访问附有 </strong>weak 修饰符的变量时，实际上必定要访问注册到 autoreleasepool 中的对象。比如有如下源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">id obj0 = [[NSArray alloc] init];</span><br><span class="line">id __weak obj1 = obj0;</span><br><span class="line">NSLog(@&quot;class=%@&quot;, [obj1 class]);</span><br></pre></td></tr></table></figure>
+<p>上述代码等价于：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">id obj0 = [[NSArray alloc] init];</span><br><span class="line">id __weak obj1 = obj0;</span><br><span class="line">id __autoreleasing tmp = obj1;</span><br><span class="line">NSLog(@&quot;class=%@&quot;, [tmp class]);</span><br></pre></td></tr></table></figure>
+<p>为什么在访问附有 <strong>weak 修饰符的变量时必须访问注册到 autoreleasepool 的对象呢？这是因为， </strong>weak 修饰符只持有对象的弱引用，而在访问对象的过程中，该对象有可能被废弃。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Objective-C/" rel="tag"># Objective-C</a>
+          
+            <a href="/tags/内存管理/" rel="tag"># 内存管理</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/31/Objective-C和swift混编/" rel="next" title="Objective-C和swift混编">
+                <i class="fa fa-chevron-left"></i> Objective-C和swift混编
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/20/现代IM系统中的消息架构设计/" rel="prev" title="现代IM系统中的消息架构设计">
+                现代IM系统中的消息架构设计 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Yang Jie" />
+            
+              <p class="site-author-name" itemprop="name">Yang Jie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/yangjie2" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://stackoverflow.com/users/8227142/y-jie" target="_blank" title="StackOverflow"><i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#About-Autorelease-Pool-Blocks"><span class="nav-number">1.</span> <span class="nav-text">About Autorelease Pool Blocks</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用-autorelease-pool-来减少峰值内存占用量"><span class="nav-number">2.</span> <span class="nav-text">使用 autorelease pool 来减少峰值内存占用量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他涉及到-autoreleasepool-的地方"><span class="nav-number">3.</span> <span class="nav-text">其他涉及到 autoreleasepool 的地方</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yang Jie</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://yangjie.disqus.com/count.js" async></script>
+  
+
+  
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'https://yangjie2.github.io/2019/07/08/autorelease/';
+        this.page.identifier = '2019/07/08/autorelease/';
+        this.page.title = 'Objective-C autorelease';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://yangjie.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        loadComments();
+      
+    </script>
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
