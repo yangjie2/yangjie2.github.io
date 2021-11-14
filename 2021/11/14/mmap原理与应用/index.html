@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html class="theme-next mist" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.3.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.3.0">
+
+
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.3.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '6.3.0',
+    sidebar: {"position":"left","display":"hide","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="mmap基础概念内存映射（mmap），就是将文件的磁盘扇区映射到进程的虚拟内存空间的过程，即将一个文件映射到进程的虚拟空间，实现文件磁盘地址和进程虚拟空间中一段虚拟地址的一一对应关系。实现这样的映射关系后，进程就可以采用指针的方式读写操作这一段内存，而系统会自动回写脏页面到对应的文件磁盘上，即完成了对文件的操作而不必再调用read,write等系统调用函数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mmap原理与应用">
+<meta property="og:url" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/index.html">
+<meta property="og:site_name">
+<meta property="og:description" content="mmap基础概念内存映射（mmap），就是将文件的磁盘扇区映射到进程的虚拟内存空间的过程，即将一个文件映射到进程的虚拟空间，实现文件磁盘地址和进程虚拟空间中一段虚拟地址的一一对应关系。实现这样的映射关系后，进程就可以采用指针的方式读写操作这一段内存，而系统会自动回写脏页面到对应的文件磁盘上，即完成了对文件的操作而不必再调用read,write等系统调用函数。">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_1.png">
+<meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_2.png">
+<meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_3.png">
+<meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_4.png">
+<meta property="og:updated_time" content="2021-11-14T12:08:13.107Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mmap原理与应用">
+<meta name="twitter:description" content="mmap基础概念内存映射（mmap），就是将文件的磁盘扇区映射到进程的虚拟内存空间的过程，即将一个文件映射到进程的虚拟空间，实现文件磁盘地址和进程虚拟空间中一段虚拟地址的一一对应关系。实现这样的映射关系后，进程就可以采用指针的方式读写操作这一段内存，而系统会自动回写脏页面到对应的文件磁盘上，即完成了对文件的操作而不必再调用read,write等系统调用函数。">
+<meta name="twitter:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_1.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="" type="application/atom+xml" />
+
+
+
+
+  <link rel="canonical" href="https://yangjie2.github.io/2021/11/14/mmap原理与应用/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>mmap原理与应用 | </title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title"></span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">空谷无人，水流花开</p>
+      
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />Home</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />Archives</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />Categories</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />Tags</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />About</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yangjie2.github.io/2021/11/14/mmap原理与应用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Yang Jie">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mmap原理与应用
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2021-11-14 20:04:22 / Modified: 20:08:13" itemprop="dateCreated datePublished" datetime="2021-11-14T20:04:22+08:00">2021-11-14</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/11/14/mmap原理与应用/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2021/11/14/mmap原理与应用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="mmap基础概念"><a href="#mmap基础概念" class="headerlink" title="mmap基础概念"></a>mmap基础概念</h2><p>内存映射（mmap），就是<strong>将文件的磁盘扇区映射到进程的虚拟内存空间</strong>的过程，即将一个文件映射到进程的虚拟空间，实现文件磁盘地址和进程虚拟空间中一段虚拟地址的一一对应关系。实现这样的映射关系后，进程就可以采用指针的方式读写操作这一段内存，而系统会自动回写脏页面到对应的文件磁盘上，即完成了对文件的操作而不必再调用read,write等系统调用函数。</p>
+<a id="more"></a>
+<p><img src="/2021/11/14/mmap原理与应用/mmap_1.png" alt="mmap_1"></p>
+<p>由上图可知，进程的虚拟地址空间，由多个虚拟内存区域构成。每个虚拟内存区域都是进程在虚拟地址空间中的一个同质区间，即具有同样特性的连续地址范围。上图中所示的text数据段（代码段）、初始数据段、BSS数据段、堆、栈和内存映射，都是一个独立的虚拟内存区域。内存映射的地址空间处在堆栈之间的空余部分。</p>
+<p>linux内核使用 <code>vm_area_struc</code>t 结构来表示一个独立的虚拟内存区域，由于每个不同质的虚拟内存区域功能和内部机制都不同，因此一个进程使用多个 <code>vm_area_struct</code> 结构来分别表示不同类型的虚拟内存区域。各个 <code>vm_area_struct</code> 结构使用链表或者树形结构链接，方便进程快速访问，如下图所示：</p>
+<p><img src="/2021/11/14/mmap原理与应用/mmap_2.png" alt="mmap_2"></p>
+<p><code>vm_area_struct</code> 结构中包含区域起始和终止地址以及其他相关信息。这样，进程对某一虚拟内存区域的任何操作需要用要的信息，都可以从 <code>vm_area_struct</code> 中获得。mmap函数就是要创建一个新的 <code>vm_area_struct</code> 结构，并将其与文件的物理磁盘地址相连。</p>
+<h2 id="mmap原理"><a href="#mmap原理" class="headerlink" title="mmap原理"></a>mmap原理</h2><p>mmap内存映射的实现过程，总的来说可以分为三个阶段：</p>
+<p><strong>阶段一：进程启动映射过程，并在虚拟地址空间中为映射创建虚拟映射区域</strong></p>
+<ol>
+<li><p>进程在用户空间调用mmap库函数，函数原型如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);</span><br></pre></td></tr></table></figure>
+<p><code>addr</code>：指定映射的虚拟内存地址，可以设置为 NULL，让内核自动选择合适的虚拟内存地址</p>
+<p><code>length</code>：映射的长度。</p>
+<p><code>prot</code>：映射内存的保护模式，可选值如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">PROT_EXEC：可以被执行</span><br><span class="line">PROT_READ：可以被读取</span><br><span class="line">PROT_WRITE：可以被写入</span><br><span class="line">PROT_NONE：不可访问</span><br></pre></td></tr></table></figure>
+<p><code>flags</code>：指定映射的类型，常用的可选值如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">1 MAP_FIXED //使用指定的映射起始地址，如果由start和len参数指定的内存区重叠于现存的映射空间，重叠部分将会被丢弃。如果指定的起始地址不可用，操作将会失败。并且起始地址必须落在页的边界上。</span><br><span class="line">2 MAP_SHARED //与其它所有映射这个对象的进程共享映射空间。对共享区的写入，相当于输出到文件。直到msync()或者munmap()被调用，文件实际上不会被更新。</span><br><span class="line">3 MAP_PRIVATE //建立一个写入时拷贝的私有映射。内存区域的写入不会影响到原文件。这个标志和以上标志是互斥的，只能使用其中一个。</span><br><span class="line">4 MAP_DENYWRITE //这个标志被忽略。</span><br><span class="line">5 MAP_EXECUTABLE //同上</span><br><span class="line">6 MAP_NORESERVE //不要为这个映射保留交换空间。当交换空间被保留，对映射区修改的可能会得到保证。当交换空间不被保留，同时内存不足，对映射区的修改会引起段违例信号。</span><br><span class="line">7 MAP_LOCKED //锁定映射区的页面，从而防止页面被交换出内存。</span><br><span class="line">8 MAP_GROWSDOWN //用于堆栈，告诉内核VM系统，映射区可以向下扩展。</span><br><span class="line">9 MAP_ANONYMOUS //匿名映射，映射区不与任何文件关联。</span><br><span class="line">10 MAP_ANON //MAP_ANONYMOUS的别称，不再被使用。</span><br><span class="line">11 MAP_FILE //兼容标志，被忽略。</span><br><span class="line">12 MAP_32BIT //将映射区放在进程地址空间的低2GB，MAP_FIXED指定时会被忽略。当前这个标志只在x86-64平台上得到支持。</span><br><span class="line">13 MAP_POPULATE //为文件映射通过预读的方式准备好页表。随后对映射区的访问不会被页违例阻塞。</span><br><span class="line">14 MAP_NONBLOCK //仅和MAP_POPULATE一起使用时才有意义。不执行预读，只为已存在于内存中的页面建立页表入</span><br></pre></td></tr></table></figure>
+<p><code>fd</code>：进行映射的文件句柄。</p>
+<p><code>offset</code>：文件偏移量（从文件的何处开始映射）</p>
+</li>
+<li><p>在当前进程的虚拟地址空间中，寻找一段空闲的满足要求的连续的虚拟地址</p>
+</li>
+<li><p>为此虚拟区分配一个 <code>vm_area_struct</code> 结构，接着对这个结构的各个域进行了初始化</p>
+</li>
+<li>将新创建的虚拟区结构 <code>vm_area_struct</code> 对象插入到进程的虚拟地址区域链表/树中</li>
+</ol>
+<p><strong>阶段二：调用内核空间的mmap函数（不同于用户空间函数），实现文件物理地址和进程虚拟地址的一一映射关系</strong></p>
+<ol start="5">
+<li><p>为映射分配了新的虚拟地址区域后，通过待映射的文件指针，在文件描述符表中找到对应的文件描述符，通过文件描述符，链接到内核“已打开文件集”中该文件的文件结构体（struct file），每个文件结构体维护着和这个已打开文件相关各项信息。</p>
+</li>
+<li><p>通过该文件的文件结构体，链接到 <code>file_operations</code> 模块，调用内核mmap函数，其原型为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int mmap(struct file *filp, struct vm_area_struct *vma) //不同于用户空间mmap库函数</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>内核mmap函数通过虚拟文件系统inode模块定位到文件磁盘物理地址。</p>
+<blockquote>
+<h3 id="什么是-inode"><a href="#什么是-inode" class="headerlink" title="什么是 inode ?"></a>什么是 inode ?</h3><p>全称为 index node，既<strong>存储文件元信息的区域</strong>，中文译名“索引节点”。<br>包含：文件权限、文件拥有者的UID、文件的大小等等。</p>
+</blockquote>
+</li>
+<li><p>通过 <code>remap_pfn_range</code> 函数建立页表，即实现了文件地址和虚拟地址区域的映射关系。此时，这片虚拟地址并没有任何数据关联到内存中。</p>
+</li>
+</ol>
+<p><strong>阶段三：进程发起对这片映射地址空间的访问，引发缺页异常，实现文件内容到内存的拷贝</strong></p>
+<blockquote>
+<p>⚠️ 前两个阶段仅在于创建虚拟区间并完成地址映射，但是并没有将任何文件数据的拷贝至内存。真正的文件读取是当进程发起读或写操作时</p>
+</blockquote>
+<ol start="9">
+<li><p>进程的读或写操作访问虚拟地址空间这一段映射地址，通过查询页表，发现这一段地址并不在物理页上。因为目前只建立了地址映射，真正的硬盘数据还没有拷贝到内存中，因此引发缺页异常。</p>
+</li>
+<li><p>缺页异常进行一系列判断，确定无非法操作后，内核发起请求调页过程。</p>
+</li>
+<li><p>调页过程先在交换缓存空间（swap cache）中寻找需要访问的内存页，如果没有则调用nopage函数把所缺的页从磁盘装入到内存中。</p>
+</li>
+<li><p>之后进程即可对这片内存进行读或者写的操作，如果写操作改变了其内容，一定时间后系统会自动回写脏页面到对应磁盘地址，也即完成了写入到文件的过程。</p>
+<blockquote>
+<p>修改过的脏页面并不会立即更新回文件中，而是有一段时间的延迟，可以调用msync()来强制同步, 这样所写的内容就能立即保存到文件里了</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="mmap文件映射和常规文件操作的区别"><a href="#mmap文件映射和常规文件操作的区别" class="headerlink" title="mmap文件映射和常规文件操作的区别"></a>mmap文件映射和常规文件操作的区别</h2><p>常规文件读写操作（调用read/fread等函数）过程如下：</p>
+<ol>
+<li><p>进程发起读写文件请求。</p>
+</li>
+<li><p>内核通过查找进程文件符表，定位到内核已打开文件集上的文件信息，从而找到此文件的<code>inode</code>。</p>
+</li>
+<li><p><code>inode</code> 在 <code>address_space</code> 上查找要请求的文件页是否已经缓存在页缓存中。如果存在，则直接返回这片文件页的内容。</p>
+</li>
+<li><p>如果不存在，则通过 <code>inode</code> 定位到文件磁盘地址，将数据从磁盘复制到页缓存。之后再次发起读页面过程，进而将页缓存中的数据发给用户进程。</p>
+</li>
+</ol>
+<p>总结来说，常规文件操作为了提高读写效率和保护磁盘，使用了页缓存机制。这样造成读文件时需要先将文件页从磁盘拷贝到页缓存中，由于页缓存处在内核空间，不能被用户进程直接访问，所以还需要将页缓存中的数据页再次拷贝到用户空间中。这样，通过了两次数据拷贝过程，才能完成<strong>进程</strong>对<strong>文件</strong>内容的访问。</p>
+<p>写操作也是一样，待写入的 buffer 在内核空间不能直接访问，必须要先拷贝至内核空间对应的主存，再写回磁盘中（延迟写回），也是需要两次数据拷贝。</p>
+<p>而使用 mmap 操作文件中，创建新的虚拟内存区域和建立文件磁盘地址和虚拟内存区域映射这两步，没有任何文件内容拷贝操作。而之后访问数据时发现内存中并无数据而发起的缺页异常过程，可以通过已经建立好的映射关系，只使用一次数据拷贝，就从磁盘中将数据传入到用户空间中，供进程使用。</p>
+<p><strong>总而言之，常规文件操作需要从磁盘到内核空间页缓存再到用户空间的两次数据拷贝。而mmap文件映射，只需要从磁盘到用户空间内存的一次数据拷贝过程。</strong>说白了，mmap的关键点是实现了用户空间和内核空间的数据直接交互而省去了空间不同数据不通的繁琐过程。因此mmap效率更高。</p>
+<h2 id="mmap使用时需要注意的细节"><a href="#mmap使用时需要注意的细节" class="headerlink" title="mmap使用时需要注意的细节"></a>mmap使用时需要注意的细节</h2><ol>
+<li><p>使用mmap需要注意的一个关键点是，mmap映射区域大小必须是物理页大小(page_size)的整倍数（32位系统中通常是4k字节）。原因是，内存的最小粒度是页，而进程虚拟地址空间和内存的映射也是以页为单位。为了匹配内存的操作，mmap从<strong>磁盘</strong>到<strong>虚拟地址空间</strong>的映射也必须是页。</p>
+</li>
+<li><p>内核可以跟踪被内存映射的底层对象（文件）的大小，进程可以合法的访问<strong>在当前文件大小以内</strong>并且又在<strong>内存映射区以内</strong>的那些字节。也就是说，如果文件的大小一直在扩张，只要在映射区域范围内的数据，进程都可以合法得到，这和映射建立时文件的大小无关。</p>
+</li>
+<li><p>映射建立之后，即使文件关闭，映射依然存在。因为映射的是磁盘的地址，不是文件本身，和文件句柄无关。</p>
+</li>
+</ol>
+<p>下面看看如果映射的大小不是页的整倍数的几种情况：</p>
+<ol>
+<li><p><strong>一个文件的大小是5000字节，mmap函数从一个文件的起始位置开始，映射5000字节到虚拟内存中</strong></p>
+<p>因为单位物理页面的大小是4096字节，虽然被映射的文件只有5000字节，但是对应到进程虚拟地址区域的大小需要满足整页大小，因此mmap函数执行后，实际映射到虚拟内存区域8192个 字节，5000~8191的字节部分用零填充。映射后的对应关系如下图所示： </p>
+</li>
+</ol>
+<p><img src="/2021/11/14/mmap原理与应用/mmap_3.png" alt="mmap_3"></p>
+<ul>
+<li><p>读/写前5000个字节（0~4999），会返回操作文件内容。</p>
+</li>
+<li><p>读字节5000~8191时，结果全为0。写5000~8191时，进程不会报错，但是所写的内容不会写入原文件中 。</p>
+</li>
+<li><p>读/写8192以外的磁盘部分，会返回一个SIGSECV错误。</p>
+</li>
+</ul>
+<p><strong>2.  一个文件的大小是5000字节，mmap函数从一个文件的起始位置开始，映射15000字节到虚拟内存中，即映射大小超过了原始文件的大小</strong></p>
+<p>由于文件的大小是 5000 字节，它对应着两个物理页。那么这两个物理页都是合法可以读写的，只是超出5000的部分不会体现在原文件中。由于程序要求映射15000字节，而文件只占两个物理页，因此8192字节~15000字节都不能读写，操作时会返回异常。如下图所示：</p>
+<p><img src="/2021/11/14/mmap原理与应用/mmap_4.png" alt="mmap_4"></p>
+<ul>
+<li><p>进程可以正常读/写被映射的前5000字节(0~4999)，写操作的改动会在一定时间后反映在原文件中。</p>
+</li>
+<li><p>对于5000~8191字节，进程可以进行读写过程，不会报错。但是内容在写入前均为0，另外，写入后不会反映在文件中。</p>
+</li>
+<li><p>对于8192~14999字节，进程不能对其进行读写，会报SIGBUS错误。</p>
+</li>
+<li><p>对于15000以外的字节，进程不能对其读写，会引发SIGSEGV错误。</p>
+</li>
+</ul>
+<p><strong>3.  一个文件初始大小为0，使用mmap操作映射了1000*4K的大小，即1000个物理页大约4M字节空间，mmap返回指针 ptr。</strong></p>
+<p>如果在映射建立之初，就对文件进行读写操作，由于文件大小为0，并没有合法的物理页对应，如同情形二一样，会返回SIGBUS错误。</p>
+<p>但是如果，每次操作 ptr 读写前，先增加文件的大小，那么ptr在文件大小内部的操作就是合法的。例如，文件扩充4096字节，ptr就能操作ptr ~ [ (char)ptr + 4095]的空间。只要文件扩充的范围在1000个物理页（映射范围）内，ptr都可以对应操作相同的大小。</p>
+<p>这样，方便随时扩充文件空间，随时写入文件，不造成空间浪费</p>
+<h2 id="iOS-中的文件映射"><a href="#iOS-中的文件映射" class="headerlink" title="iOS 中的文件映射"></a>iOS 中的文件映射</h2><p><a href="https://developer.apple.com/library/archive/documentation/Performance/Conceptual/FileSystem/Articles/MappingFiles.html#//apple_ref/doc/uid/20001990-CJBJFIDD" target="_blank" rel="noopener">文件映射</a>就是使用 mmap 映射磁盘文件到进程的虚拟地址空间。完成映射后，app访问文件就好像是访问内存一样高效。那么什么时候可以考虑使用文件映射呢？</p>
+<p>在以下场景下，文件映射非常高效：</p>
+<ul>
+<li>你有一个大文件，并且文件内容你会随机的访问一次或多次</li>
+<li>你有一个小文件，并且你需要一次性把整个文件数据读入内存中，并且频繁访问。这种技术最适用于大小不超过几个虚拟内存页的文件。</li>
+<li>你想在内存中缓存一个文件的一个特定部分。</li>
+</ul>
+<p>在以下场景下，不可以使用文件映射：</p>
+<ul>
+<li>从头到尾依次读取文件内容仅一次</li>
+<li>文件有几百兆字节甚至更大</li>
+<li>文件位于可移动驱动器或者网络驱动器中</li>
+</ul>
+<p>当随机访问一个很大的文件时，最好的办法是一次映射文件的一小部分。如果映射太多，会占用应用的虚拟地址空间。</p>
+<h2 id="mmap应用"><a href="#mmap应用" class="headerlink" title="mmap应用"></a>mmap应用</h2><p><strong>1. 日志</strong></p>
+<p>​    <a href="https://emop.jd.com/blogs/2021/5/京东零售云mPaaS移动端日志回捞探索实践.html" target="_blank" rel="noopener">京东零售云mPaaS移动端日志回捞探索实践</a></p>
+<p>​    <a href="https://mp.weixin.qq.com/s/kDPTt9Rtd-PERXXW-UyUlQ" target="_blank" rel="noopener">微信 mars</a></p>
+<p>​    <a href="https://tech.meituan.com/2018/02/11/logan.html" target="_blank" rel="noopener">美团 Logan</a></p>
+<p><strong>2. 持久化存储(MMKV)</strong></p>
+<p><a href="https://juejin.cn/post/6877823318133735437" target="_blank" rel="noopener">MMKV原理</a>    </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/12/12/Category与Extention/" rel="next" title="Category与Extention">
+                <i class="fa fa-chevron-left"></i> Category与Extention
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.png"
+                alt="Yang Jie" />
+            
+              <p class="site-author-name" itemprop="name">Yang Jie</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">18</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">22</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/yangjie2" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://stackoverflow.com/users/8227142/y-jie" target="_blank" title="StackOverflow"><i class="fa fa-fw fa-stack-overflow"></i>StackOverflow</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap基础概念"><span class="nav-number">1.</span> <span class="nav-text">mmap基础概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap原理"><span class="nav-number">2.</span> <span class="nav-text">mmap原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是-inode"><span class="nav-number">2.1.</span> <span class="nav-text">什么是 inode ?</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap文件映射和常规文件操作的区别"><span class="nav-number">3.</span> <span class="nav-text">mmap文件映射和常规文件操作的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap使用时需要注意的细节"><span class="nav-number">4.</span> <span class="nav-text">mmap使用时需要注意的细节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS-中的文件映射"><span class="nav-number">5.</span> <span class="nav-text">iOS 中的文件映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mmap应用"><span class="nav-number">6.</span> <span class="nav-text">mmap应用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yang Jie</span>
+
+  
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://theme-next.org">NexT.Mist</a> v6.3.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.3.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.3.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.3.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://yangjie.disqus.com/count.js" async></script>
+  
+
+  
+    <script type="text/javascript">
+      var disqus_config = function () {
+        this.page.url = 'https://yangjie2.github.io/2021/11/14/mmap原理与应用/';
+        this.page.identifier = '2021/11/14/mmap原理与应用/';
+        this.page.title = 'mmap原理与应用';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://yangjie.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        loadComments();
+      
+    </script>
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
