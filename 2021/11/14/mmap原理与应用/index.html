@@ -113,7 +113,7 @@
 <meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_2.png">
 <meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_3.png">
 <meta property="og:image" content="https://yangjie2.github.io/2021/11/14/mmap原理与应用/mmap_4.png">
-<meta property="og:updated_time" content="2021-11-14T12:08:13.107Z">
+<meta property="og:updated_time" content="2021-11-15T01:47:05.905Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mmap原理与应用">
 <meta name="twitter:description" content="mmap基础概念内存映射（mmap），就是将文件的磁盘扇区映射到进程的虚拟内存空间的过程，即将一个文件映射到进程的虚拟空间，实现文件磁盘地址和进程虚拟空间中一段虚拟地址的一一对应关系。实现这样的映射关系后，进程就可以采用指针的方式读写操作这一段内存，而系统会自动回写脏页面到对应的文件磁盘上，即完成了对文件的操作而不必再调用read,write等系统调用函数。">
@@ -351,12 +351,24 @@
                 
               
 
-              <time title="Created: 2021-11-14 20:04:22 / Modified: 20:08:13" itemprop="dateCreated datePublished" datetime="2021-11-14T20:04:22+08:00">2021-11-14</time>
+              <time title="Created: 2021-11-14 20:04:22" itemprop="dateCreated datePublished" datetime="2021-11-14T20:04:22+08:00">2021-11-14</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2021-11-15 09:47:05" itemprop="dateModified" datetime="2021-11-15T09:47:05+08:00">2021-11-15</time>
               
             
           </span>
@@ -440,21 +452,25 @@
 <h3 id="什么是-inode"><a href="#什么是-inode" class="headerlink" title="什么是 inode ?"></a>什么是 inode ?</h3><p>全称为 index node，既<strong>存储文件元信息的区域</strong>，中文译名“索引节点”。<br>包含：文件权限、文件拥有者的UID、文件的大小等等。</p>
 </blockquote>
 </li>
-<li><p>通过 <code>remap_pfn_range</code> 函数建立页表，即实现了文件地址和虚拟地址区域的映射关系。此时，这片虚拟地址并没有任何数据关联到内存中。</p>
+<li><p>通过 <code>remap_pfn_range</code> 函数建立页表，即实现了文件地址和虚拟地址区域的映射关系。此时，这片虚拟地址并没有任何数据关联到物理内存(主存)中。</p>
+<blockquote>
+<p>主存</p>
+<p>主存储器（Main memory），简称主存。是计算机硬件的一个重要部件，其作用是存放指令和数据，并能由中央处理器（CPU）直接随机存取</p>
+</blockquote>
 </li>
 </ol>
-<p><strong>阶段三：进程发起对这片映射地址空间的访问，引发缺页异常，实现文件内容到内存的拷贝</strong></p>
+<p><strong>阶段三：进程发起对这片映射地址空间的访问，引发缺页异常，实现文件内容到主存（物理内存）的拷贝</strong></p>
 <blockquote>
-<p>⚠️ 前两个阶段仅在于创建虚拟区间并完成地址映射，但是并没有将任何文件数据的拷贝至内存。真正的文件读取是当进程发起读或写操作时</p>
+<p>⚠️ 前两个阶段仅在于创建虚拟区间并完成地址映射，但是并没有将任何文件数据的拷贝至主存。真正的文件读取是当进程发起读或写操作时</p>
 </blockquote>
 <ol start="9">
 <li><p>进程的读或写操作访问虚拟地址空间这一段映射地址，通过查询页表，发现这一段地址并不在物理页上。因为目前只建立了地址映射，真正的硬盘数据还没有拷贝到内存中，因此引发缺页异常。</p>
 </li>
 <li><p>缺页异常进行一系列判断，确定无非法操作后，内核发起请求调页过程。</p>
 </li>
-<li><p>调页过程先在交换缓存空间（swap cache）中寻找需要访问的内存页，如果没有则调用nopage函数把所缺的页从磁盘装入到内存中。</p>
+<li><p>调页过程先在交换缓存空间（swap cache）中寻找需要访问的内存页，如果没有则调用nopage函数把所缺的页从磁盘装入到主存中。</p>
 </li>
-<li><p>之后进程即可对这片内存进行读或者写的操作，如果写操作改变了其内容，一定时间后系统会自动回写脏页面到对应磁盘地址，也即完成了写入到文件的过程。</p>
+<li><p>之后进程即可对这片主存进行读或者写的操作，如果写操作改变了其内容，一定时间后系统会自动回写脏页面到对应磁盘地址，也即完成了写入到文件的过程。</p>
 <blockquote>
 <p>修改过的脏页面并不会立即更新回文件中，而是有一段时间的延迟，可以调用msync()来强制同步, 这样所写的内容就能立即保存到文件里了</p>
 </blockquote>
@@ -471,10 +487,10 @@
 <li><p>如果不存在，则通过 <code>inode</code> 定位到文件磁盘地址，将数据从磁盘复制到页缓存。之后再次发起读页面过程，进而将页缓存中的数据发给用户进程。</p>
 </li>
 </ol>
-<p>总结来说，常规文件操作为了提高读写效率和保护磁盘，使用了页缓存机制。这样造成读文件时需要先将文件页从磁盘拷贝到页缓存中，由于页缓存处在内核空间，不能被用户进程直接访问，所以还需要将页缓存中的数据页再次拷贝到用户空间中。这样，通过了两次数据拷贝过程，才能完成<strong>进程</strong>对<strong>文件</strong>内容的访问。</p>
+<p>总结来说，常规文件操作为了提高读写效率和保护磁盘，使用了页缓存机制。这样造成读文件时需要先将文件页从磁盘拷贝到页缓存中，由于页缓存处在内核空间，不能被用户进程直接寻址访问，所以还需要将页缓存中的数据页再次拷贝到用户空间中。这样，通过了两次数据拷贝过程，才能完成<strong>进程</strong>对<strong>文件</strong>内容的访问。</p>
 <p>写操作也是一样，待写入的 buffer 在内核空间不能直接访问，必须要先拷贝至内核空间对应的主存，再写回磁盘中（延迟写回），也是需要两次数据拷贝。</p>
 <p>而使用 mmap 操作文件中，创建新的虚拟内存区域和建立文件磁盘地址和虚拟内存区域映射这两步，没有任何文件内容拷贝操作。而之后访问数据时发现内存中并无数据而发起的缺页异常过程，可以通过已经建立好的映射关系，只使用一次数据拷贝，就从磁盘中将数据传入到用户空间中，供进程使用。</p>
-<p><strong>总而言之，常规文件操作需要从磁盘到内核空间页缓存再到用户空间的两次数据拷贝。而mmap文件映射，只需要从磁盘到用户空间内存的一次数据拷贝过程。</strong>说白了，mmap的关键点是实现了用户空间和内核空间的数据直接交互而省去了空间不同数据不通的繁琐过程。因此mmap效率更高。</p>
+<p><strong>总而言之，常规文件操作需要从磁盘到内核空间页缓存再到用户空间主存的两次数据拷贝。而mmap文件映射，只需要从磁盘到用户空间主存的一次数据拷贝过程。</strong>说白了，mmap的关键点是实现了用户空间和内核空间的数据直接交互而省去了空间不同数据不通的繁琐过程。因此mmap效率更高。</p>
 <h2 id="mmap使用时需要注意的细节"><a href="#mmap使用时需要注意的细节" class="headerlink" title="mmap使用时需要注意的细节"></a>mmap使用时需要注意的细节</h2><ol>
 <li><p>使用mmap需要注意的一个关键点是，mmap映射区域大小必须是物理页大小(page_size)的整倍数（32位系统中通常是4k字节）。原因是，内存的最小粒度是页，而进程虚拟地址空间和内存的映射也是以页为单位。为了匹配内存的操作，mmap从<strong>磁盘</strong>到<strong>虚拟地址空间</strong>的映射也必须是页。</p>
 </li>
